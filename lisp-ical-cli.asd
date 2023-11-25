@@ -11,7 +11,9 @@
   :depends-on (:clingon)
   :components ((:module "main"
 		:pathname #P"src/"
-		:components ((:file "main"))))
+		:components ((:file "package")
+           (:file "import")
+           (:file "main"))))
   :build-operation "program-op"
   :build-pathname "bin/lisp-ical-cli"
   :entry-point "lisp-ical-cli:main")
