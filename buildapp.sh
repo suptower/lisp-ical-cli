@@ -1,4 +1,4 @@
 sbcl --eval '(ql:register-local-projects)' \
-     --eval '(ql:quickload :lisp-ical-cli)' \
-     --eval '(asdf:make :lisp-ical-cli)' \
+     --eval '(ql:quickload :ical-cli)' \
+     --eval '(asdf:make :ical-cli)' \
      --eval '(quit)'

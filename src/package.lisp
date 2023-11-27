@@ -1,6 +1,6 @@
 (in-package :cl-user)
-(defpackage :lisp-ical-cli
+(defpackage :ical-cli
   (:use :cl)
   (:import-from :clingon)
   (:export :main))
-(in-package :lisp-ical-cli)
+(in-package :ical-cli)

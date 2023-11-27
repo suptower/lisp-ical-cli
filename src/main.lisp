@@ -1,10 +1,13 @@
-(in-package :lisp-ical-cli)
+(in-package :ical-cli)
+
+;; specification
+;; RFC 5545 https://datatracker.ietf.org/doc/html/rfc554
 
 (defun top-level/command ()
   (clingon:make-command
    :name "ical-cli"
    :version "0.0.1"
-   :description "A command line interface for iCal files"
+   :description "A command line interface for iCal files specified by RFC 5545. (https://datatracker.ietf.org/doc/html/rfc5545)"
    :authors '("Arda Köcer <arda.koecer@st.oth-regensburg.de>")
    :handler #'top-level/handler
    :sub-commands (top-level/sub-commands)))
