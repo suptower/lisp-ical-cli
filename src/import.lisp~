@@ -13,7 +13,8 @@
      :required t)))
 
 (defun import/handler (cmd)
-  (let ((file (clingon:getopt cmd :file)))
+  (let ((file (clingon:getopt cmd :file))
+	(inVEVENT nil))
     (format t "Importing file ~a~%" file)
     (with-open-file (stream file)
       (loop for line = (read-line stream nil nil) for index from 0
@@ -21,8 +22,20 @@
 	    do (progn
 		 (if (= 0 index)
 		     (checkICS line))
-		 (if (checkForVEVENT line)
-		     (format t "Found BEGIN:VEVENT at index ~a~%" index)))))))
+		 (if (and (checkForVEVENT line)
+			  (not inVEVENT))
+		     (progn
+		       (format t "Found BEGIN:VEVENT at index ~a~%" index)
+		       (format t "~a~%" line)
+		       (setf inVEVENT t)))
+		 (if (and (checkForStart line) inVEVENT)
+		     (progn
+		       (format t "Found DTSTART at index ~a~%" index)
+		       (format t "~a~%" (getStartTime line))))
+		 (if (and (checkForEndOrDuration line) inVEVENT)
+		     (progn
+		       (format t "Found DTEND/DURATION at index ~a~%" index)
+		       (format t "~a~%" (getEndTime line)))))))))		 
 
 (defun import/command ()
     (clingon:make-command
@@ -43,3 +56,21 @@
   (if (search "BEGIN:VEVENT" line)
       t
       nil))
+
+(defun checkForStart (line)
+  (if (search "DTSTART" line)
+      t
+      nil))
+
+(defun checkForEndOrDuration (line)
+  (if (or (search "DTEND" line) (search "DURATION" line))
+      t
+      nil))
+
+(defun getStartTime (line)
+  (subseq line 13))
+
+(defun getEndTime (line)
+  (cond ((search "DTEND" line) (subseq line 11))
+	((search "DURATION" line) (subseq line 9))
+	(t (format t "FAILURE, NO DTEND OR DURATION FOUND."))))
