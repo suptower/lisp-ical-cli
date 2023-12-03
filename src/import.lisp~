@@ -67,10 +67,11 @@
       t
       nil))
 
-(defun getStartTime (line)
-  (subseq line 13))
+;(defun getStartTime (line)
+;  (subseq line (+ (position #\: line :test #'equal) 1)))
 
 (defun getEndTime (line)
-  (cond ((search "DTEND" line) (subseq line 11))
-	((search "DURATION" line) (subseq line 9))
+  (cond ((search "DTEND" line) (progn
+				 (subseq line (+ (position #\: line :test #'equal) 1))))
+	((search "DURATION" line) (subseq line (+ (position #\: line :test #'equal) 1)))
 	(t (format t "FAILURE, NO DTEND OR DURATION FOUND."))))

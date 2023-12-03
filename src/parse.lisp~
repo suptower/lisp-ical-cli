@@ -1,0 +1,4 @@
+(in-package :ical-cli)
+
+(defun getStartTime (line)
+  (subseq line (+ (position #\: line :test #'equal) 1)))

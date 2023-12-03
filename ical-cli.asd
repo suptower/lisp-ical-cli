@@ -13,6 +13,7 @@
 		:pathname #P"src/"
 		:components ((:file "package")
            (:file "import")
+	   (:file "parse")
            (:file "main"))))
   :build-operation "program-op"
   :build-pathname "bin/ical-cli"
