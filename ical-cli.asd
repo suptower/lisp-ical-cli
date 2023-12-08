@@ -8,7 +8,7 @@
   :description "iCal command line interface"
   :version "0.1.0"
   :author "Arda Köcer <arda.koecer@st.oth-regensburg.de>"
-  :depends-on (:clingon)
+  :depends-on (:clingon :local-time :cl-date-time-parser)
   :components ((:module "main"
 		:pathname #P"src/"
 		:components ((:file "package")

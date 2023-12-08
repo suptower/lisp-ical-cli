@@ -16,7 +16,9 @@
   (let ((file (clingon:getopt cmd :file))
 	(inVEVENT nil)
 	(startTime nil)
-	(endTime nil))
+	(startTimeFound nil)
+	(endTime nil)
+	(endTimeFound nil))
     (format t "Importing file ~a~%" file)
     (with-open-file (stream file)
       (loop for line = (read-line stream nil nil) for index from 0
@@ -32,11 +34,15 @@
 		 (if (and (checkForStart line) inVEVENT)
 		     (progn
 		       (format t "Found DTSTART at index ~a~%" index)
-		       (getStartTime line)))
+		       (setf startTimeFound t)
+		       (setf startTime (getStartTime line))
+		       (format t "starttime: ~a~%" startTime)))
 		 (if (and (checkForEndOrDuration line) inVEVENT)
 		     (progn
 		       (format t "Found DTEND/DURATION at index ~a~%" index)
-		       (getEndTime line))))))
+		       (setf endTimeFound t)
+		       (setf endTime (getEndTime startTime line))
+		       (format t "endtime: ~a~%" endTime))))))
     (format t "DONE.~%")))
 
 (defun import/command ()
