@@ -29,20 +29,93 @@
 (defun calcEndTime (startTime duration)
   ;; duration needs to be parsed into year, day, hour, minute, second
   ;; check if duration is dur-date, dur-time or dur-week
-  (cond ((search "W" duration) (progn
-				 ;; duration is dur-week, format is PXW, where X is a number to specify the weeks
-				 ;; so we need to get the substring between P and W
-				 ;; then calculate the days (weeks * 7)
-				 (let ((days (* (subseq duration 0 (+ (position #\W duration :test #'equal) 1)) * 7)))
-				   (progn
-				     ;; timestamp can now be calculated
-				     (local-time:timestamp+ (cl-date-time-parser:parse-date-time startTime))))))))
-  
-
-;; input: timestamp in iso 8601.2004 ("20130723T194223")
-;; output: universal time
-(defun decodeTimestamp (timestamp)
-  (cl-date-time-parser:parse-date-time timestamp))
+  (let ((endTime nil)
+	(days nil)
+	(hours nil)
+	(mins nil)
+	(secs nil))
+    (cond ((search "W" duration)
+	   (progn
+	     ;; duration is dur-week, format is PXW, where X is a number to specify the weeks
+	     ;; so we need to get the substring between P and W
+	     ;; then calculate the days (weeks * 7)
+	     (setf days (* (parse-integer (subseq duration 1 (position #\W duration :test #'equal))) 7))
+	     (setf endTime (local-time:adjust-timestamp startTime
+			     (offset :day days)))))
+	  ((search "D" duration)
+	   (progn
+	     (setf days (parse-integer (subseq duration (+ (position #\P duration :test #'equal) 1) (position #\D duration :test #'equal))))
+	     ;; duration is dur-date = dur-day [dur-time]
+	     ;; dur-day = DIGIT "D"
+	     ;; dur-time = "T" (dur-hour / dur-minute / dur-second)
+	     ;; now find out, if dur-time is attached or if it is ONLY dur-day
+	     (cond ((search "T" duration)
+		    (progn
+		      ;; dur-time is attached
+		      (cond ((search "H" duration)
+			     (progn
+			       (setf hours (parse-integer (subseq duration (+ (position #\T duration :test #'equal) 1) (position #\H duration :test #'equal))))
+			       (cond ((search "M" duration)
+				      (progn
+					(setf mins (parse-integer (subseq duration (+ (position #\H duration :test #'equal) 1) (position #\M duration :test #'equal))))
+					(cond ((search "S" duration)
+					       (progn
+						 (setf secs (parse-integer (subseq duration (+ (position #\M duration :test #'equal) 1) (position #\S duration :test #'equal))))
+						 (setf endTime (local-time:adjust-timestamp startTime
+								    (offset :sec secs)
+								    (offset :minute mins)
+								    (offset :hour hours)
+								    (offset :day days)))))
+						 (t (setf endTime (local-time:adjust-timestamp startTime
+								    (offset :minute mins)
+								    (offset :hour hours)
+								    (offset :day days)))))))
+				      (t (setf endTime (local-time:adjust-timestamp startTime
+							 (offset :hour hours)
+							 (offset :day days)))))))
+			   (t (setf endTime (local-time:adjust-timestamp startTime
+					      (offset :day days)))))))
+		   (t (setf endTime (local-time:adjust-timestamp startTime
+				      (offset :day days)))))))
+	  ((search "T" duration)
+	   (progn
+	     (cond ((search "H" duration)
+		    (progn
+		      (setf hours (parse-integer (subseq duration (+ (position #\T duration :test #'equal) 1) (position #\H duration :test #'equal))))
+		      (cond ((search "M" duration)
+			     (progn
+			       (setf mins (parse-integer (subseq duration (+ (position #\H duration :test #'equal) 1) (position #\M duration :test #'equal))))
+			       (cond ((search "S" duration)
+				      (progn
+					(setf secs (parse-integer (subseq duration (+ (position #\M duration :test #'equal) 1) (position #\S duration :test #'equal))))
+					(setf endTime (local-time:adjust-timestamp startTime
+							(offset :sec secs)
+							(offset :minute mins)
+							(offset :hour hours)))))
+				     (t (setf endTime (local-time:adjust-timestamp startTime
+							(offset :minute mins)
+							(offset :hour hours)))))))
+			    (t (setf endTime (local-time:adjust-timestamp startTime
+					       (offset :hour hours)))))))
+		   ((search "M" duration)
+		    (progn
+		      (setf mins (parse-integer (subseq duration (+ (position #\T duration :test #'equal) 1) (position #\M duration :test #'equal))))
+		      (cond ((search "S" duration)
+			     (progn
+			       (setf secs (parse-integer (subseq duration (+ (position #\M duration :test #'equal) 1) (position #\S duration :test #'equal))))
+			       (setf endTime (local-time:adjust-timestamp startTime
+					       (offset :sec secs)
+					       (offset :minute mins)))))
+			    (t (setf endTime (local-time:adjust-timestamp startTime
+					       (offset :minute mins)))))))
+		   ((search "S" duration)
+		    (progn
+		      (setf secs (parse-integer (subseq duration (+ (position #\T duration :test #'equal) 1) (position #\S duration :test #'equal))))
+		      (setf endTime (local-time:adjust-timestamp startTime
+				      (offset :sec secs)))))
+		   (t (setf endTime (format nil "FAILURE, NO CORRECT DURATION WAS GIVEN FOR CALCENDTIME. GIVEN ARG: ~a~%" duration))))))
+	  (t (setf endTime (format nil "FAILURE, NO CORRECT DURATION WAS GIVEN FOR CALCENDTIME. GIVEN ARG: ~a~%" duration))))
+    endTime))
    
 (defun createLocalTimestamp (timestamp)
   (let ((year (parse-integer (subseq timestamp 0 4)))
@@ -64,22 +137,13 @@
 	    (setf output (local-time:encode-timestamp 0 0 0 0 day month year)))))
     output))
 
-;; input: timestamp in iso 8601.2004 ("20130723T194223")
-;; output: human readable time string in form dd.mm.yyyy HH:MM:SS
-(defun formatISO8601Time (timestamp)
-  (let ((returnVal nil))
-    (format t "got timestamp: ~a~%" timestamp)
-					;(setf returnVal (format NIL "~a" (local-time:format-timestring nil (local-time:universal-to-timestamp (cl-date-time-parser:parse-date-time timestamp)) :format +hrtime+ :timezone local-time:+utc-zone+)))
-    (format t "parsed universal: ~a~%" (cl-date-time-parser:parse-date-time timestamp))
-    (format t "formatted: ~a~%" (local-time:format-timestring nil (local-time:universal-to-timestamp (cl-date-time-parser:parse-date-time (format nil "~a" timestamp))) :format +hrtime+))
-  returnVal))
-
 
 ;; input: standard local-time-timestamp ("2019-11-13T18:08:23.3126624+01:00")
 ;; output: human readable time string in form dd.mm.yyyy HH:MM:SS
 (defun formatLocalTime (timestamp)
   (local-time:format-timestring nil timestamp :format +hrtime+))
 
+;; human readable time format
 (defparameter +hrtime+
   ;; 08.12.2023 15:39:41
   '((:day 2) "." (:month 2) "." (:year 4) " " (:hour 2) ":" (:min 2) ":" (:sec 2)))
