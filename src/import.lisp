@@ -18,7 +18,8 @@
 	(startTime nil)
 	(startTimeFound nil)
 	(endTime nil)
-	(endTimeFound nil))
+	(endTimeFound nil)
+	(output nil))
     (format t "Importing file ~a~%" file)
     (with-open-file (stream file)
       (loop for line = (read-line stream nil nil) for index from 0
@@ -43,7 +44,8 @@
 		       (setf endTimeFound t)
 		       (setf endTime (getEndTime startTime line))
 		       (format t "endtime: ~a~%" endTime))))))
-    (format t "DONE.~%")))
+    (setf output (format nil "~a - ~a~%" startTime endTime))
+    (format t "~a" output)))
 
 (defun import/command ()
     (clingon:make-command
