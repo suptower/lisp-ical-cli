@@ -22,7 +22,8 @@
   (cond ((search "DTEND" line) (progn
 				 (formatLocalTime (createLocalTimestamp (subseq line (+ (position #\: line :test #'equal) 1))))))
 	((search "DURATION" line) (progn
-				    (formatLocalTime (calcEndTime startTime (subseq line (+ (position #\: line :test #'equal) 1))))))
+				    (format t "startTime looks like this: ~a~%" (createLocalFromHR startTime))
+				    (formatLocalTime (calcEndTime (createLocalFromHR startTime) (subseq line (+ (position #\: line :test #'equal) 1))))))
 	(t (format t "FAILURE, NO DTEND OR DURATION FOUND."))))
 
 
@@ -116,6 +117,16 @@
 		   (t (setf endTime (format nil "FAILURE, NO CORRECT DURATION WAS GIVEN FOR CALCENDTIME. GIVEN ARG: ~a~%" duration))))))
 	  (t (setf endTime (format nil "FAILURE, NO CORRECT DURATION WAS GIVEN FOR CALCENDTIME. GIVEN ARG: ~a~%" duration))))
     endTime))
+
+(defun createLocalFromHR (timestamp)
+  (let ((day (parse-integer (subseq timestamp 0 2)))
+	(month (parse-integer (subseq timestamp 3 5)))
+	(year (parse-integer (subseq timestamp 6 10)))
+	(hour (parse-integer (subseq timestamp 11 13)))
+	(minute (parse-integer (subseq timestamp 14 16)))
+	(second (parse-integer (subseq timestamp 17 19))))
+    (local-time:encode-timestamp 0 second minute hour day month year)))
+	
    
 (defun createLocalTimestamp (timestamp)
   (let ((year (parse-integer (subseq timestamp 0 4)))

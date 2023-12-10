@@ -15,6 +15,16 @@
       t
       nil))
 
+(defun checkForSummary (line)
+  (if (search "SUMMARY" line)
+      t
+      nil))
+
+(defun checkForDesc (line)
+  (if (search "DESCRIPTION" line)
+      t
+      nil))
+
 (defun getStartTime (line)
   (formatLocalTime (createLocalTimestamp (subseq line (+ (position #\: line :test #'equal) 1)))))
 
@@ -26,6 +36,12 @@
 				    (formatLocalTime (calcEndTime (createLocalFromHR startTime) (subseq line (+ (position #\: line :test #'equal) 1))))))
 	(t (format t "FAILURE, NO DTEND OR DURATION FOUND."))))
 
+(defun getSummary (line)
+  (subseq line (+ (position #\: line :test #'equal) 1)))
+
+(defun getDesc (line)
+  (subseq line (+ (position #\: line :test #'equal) 1)))
+  
 
 (defun calcEndTime (startTime duration)
   ;; duration needs to be parsed into year, day, hour, minute, second

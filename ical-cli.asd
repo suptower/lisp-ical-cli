@@ -14,6 +14,7 @@
 		:components ((:file "package")
            (:file "import")
 	   (:file "parse")
+	   (:file "store")
            (:file "main"))))
   :build-operation "program-op"
   :build-pathname "bin/ical-cli"
