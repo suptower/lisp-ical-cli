@@ -41,23 +41,34 @@
 		       (format t "Found DTSTART at index ~a~%" index)
 		       (setf startTimeFound t)
 		       (setf startTime (getStartTime line))
-		       (format t "starttime: ~a~%" startTime)))
+		       (format t "starttime: ~s~%" startTime)))
 		 (if (and (checkForEndOrDuration line) inVEVENT)
 		     (progn
 		       (format t "Found DTEND/DURATION at index ~a~%" index)
 		       (setf endTimeFound t)
 		       (setf endTime (getEndTime startTime line))
-		       (format t "endtime: ~a~%" endTime)))
+		       (format t "endtime: ~s~%" endTime)))
 		 (if (and (checkForSummary line) inVEVENT)
 		     (progn
 		       (format t "Found SUMMARY at index ~a~%" index)
 		       (setf summaryFound t)
 		       (setf summary (getSummary line))
-		       (format t "summary: ~a~%" summary))))))
+		       (format t "summary: ~s~%" summary)))
+		 (if (and (checkForDesc line) inVEVENT)
+		     (progn
+		       (format t "Found DESC at index ~a~%" index)
+		       (setf descFound t)
+		       (setf desc (getDesc line))
+		       (format t "desc: ~$~%" desc))))))
     (if (and inVEVENT startTimeFound endTimeFound summaryFound)
 	(progn
-	  (setf output (format nil "~a,~a,~a" startTime endTime summary))
-	  (addEvent output))
+	  (with-standard-io-syntax
+	    (format t "print-pretty is ~a~%" *print-pretty*)
+	    (if descFound
+		(setf output (format nil "~$,~$,~$,~$" startTime endTime summary desc))
+		(setf output (format nil "~a,~a,~a" startTime endTime summary)))
+	    (addEvent output)
+	    (format t "output: ~a~%" output)))
 	(format t "ICS file is either missing start time, end time or summary."))))
 
 (defun import/command ()

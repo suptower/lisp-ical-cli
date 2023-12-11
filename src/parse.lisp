@@ -37,7 +37,7 @@
 	(t (format t "FAILURE, NO DTEND OR DURATION FOUND."))))
 
 (defun getSummary (line)
-  (subseq line (+ (position #\: line :test #'equal) 1)))
+  (string-trim '(#\Space #\Newline) (subseq line (+ (position #\: line :test #'equal) 1))))
 
 (defun getDesc (line)
   (subseq line (+ (position #\: line :test #'equal) 1)))
