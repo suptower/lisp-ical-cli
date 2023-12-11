@@ -36,12 +36,8 @@
 				    (formatLocalTime (calcEndTime (createLocalFromHR startTime) (subseq line (+ (position #\: line :test #'equal) 1))))))
 	(t (format t "FAILURE, NO DTEND OR DURATION FOUND."))))
 
-(defun getSummary (line)
-  (string-trim '(#\Space #\Newline) (subseq line (+ (position #\: line :test #'equal) 1))))
-
-(defun getDesc (line)
-  (subseq line (+ (position #\: line :test #'equal) 1)))
-  
+(defun getSummaryDesc (line)
+  (subseq (subseq line (+ (position #\: line :test #'equal) 1)) 0 (- (length (subseq line (+ (position #\: line :test #'equal) 1))) 1)))
 
 (defun calcEndTime (startTime duration)
   ;; duration needs to be parsed into year, day, hour, minute, second

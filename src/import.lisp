@@ -52,13 +52,13 @@
 		     (progn
 		       (format t "Found SUMMARY at index ~a~%" index)
 		       (setf summaryFound t)
-		       (setf summary (getSummary line))
+		       (setf summary (getSummaryDesc line))
 		       (format t "summary: ~s~%" summary)))
 		 (if (and (checkForDesc line) inVEVENT)
 		     (progn
 		       (format t "Found DESC at index ~a~%" index)
 		       (setf descFound t)
-		       (setf desc (getDesc line))
+		       (setf desc (getSummaryDesc line))
 		       (format t "desc: ~$~%" desc))))))
     (if (and inVEVENT startTimeFound endTimeFound summaryFound)
 	(progn
@@ -66,7 +66,7 @@
 	    (format t "print-pretty is ~a~%" *print-pretty*)
 	    (if descFound
 		(setf output (format nil "~$,~$,~$,~$" startTime endTime summary desc))
-		(setf output (format nil "~a,~a,~a" startTime endTime summary)))
+		(setf output (format nil "~$,~$,~$" startTime endTime summary)))
 	    (addEvent output)
 	    (format t "output: ~a~%" output)))
 	(format t "ICS file is either missing start time, end time or summary."))))
