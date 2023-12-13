@@ -15,6 +15,7 @@
            (:file "import")
 	   (:file "parse")
 	   (:file "store")
+	   (:file "show")
            (:file "main"))))
   :build-operation "program-op"
   :build-pathname "bin/ical-cli"

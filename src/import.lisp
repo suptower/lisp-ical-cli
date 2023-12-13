@@ -8,7 +8,7 @@
      :filepath
      :short-name #\f
      :long-name "file"
-     :description "The ical file to import"
+     :description "(REQUIRED) The ical file to import"
      :key :file
      :required t)))
 
@@ -33,48 +33,38 @@
 		     (checkICS line))
 		 (if (and (checkForVEVENT line)
 			  (not inVEVENT))
-		     (progn
-		       (format t "Found BEGIN:VEVENT at index ~a~%" index)
-		       (setf inVEVENT t)))
+		       (setf inVEVENT t))
 		 (if (and (checkForStart line) inVEVENT)
 		     (progn
-		       (format t "Found DTSTART at index ~a~%" index)
 		       (setf startTimeFound t)
-		       (setf startTime (getStartTime line))
-		       (format t "starttime: ~s~%" startTime)))
+		       (setf startTime (getStartTime line))))
 		 (if (and (checkForEndOrDuration line) inVEVENT)
 		     (progn
-		       (format t "Found DTEND/DURATION at index ~a~%" index)
 		       (setf endTimeFound t)
-		       (setf endTime (getEndTime startTime line))
-		       (format t "endtime: ~s~%" endTime)))
+		       (setf endTime (getEndTime startTime line))))
 		 (if (and (checkForSummary line) inVEVENT)
 		     (progn
-		       (format t "Found SUMMARY at index ~a~%" index)
 		       (setf summaryFound t)
-		       (setf summary (getSummaryDesc line))
-		       (format t "summary: ~s~%" summary)))
+		       (setf summary (getSummaryDesc line))))
 		 (if (and (checkForDesc line) inVEVENT)
 		     (progn
-		       (format t "Found DESC at index ~a~%" index)
 		       (setf descFound t)
-		       (setf desc (getSummaryDesc line))
-		       (format t "desc: ~$~%" desc))))))
+		       (setf desc (getSummaryDesc line)))))))
     (if (and inVEVENT startTimeFound endTimeFound summaryFound)
 	(progn
 	  (with-standard-io-syntax
-	    (format t "print-pretty is ~a~%" *print-pretty*)
 	    (if descFound
 		(setf output (format nil "~$,~$,~$,~$" startTime endTime summary desc))
 		(setf output (format nil "~$,~$,~$" startTime endTime summary)))
 	    (addEvent output)
-	    (format t "output: ~a~%" output)))
+	    (format t "Imported Event (start, end, summary, description): ~a~%" output)))
 	(format t "ICS file is either missing start time, end time or summary."))))
 
 (defun import/command ()
     (clingon:make-command
      :name "import"
      :description "Import an ical file into the database"
+     :examples '(("Import Standup.ics file:" . "ical-cli import -f Standup.ics"))
      :options (import/options)
      :handler #'import/handler))
 
