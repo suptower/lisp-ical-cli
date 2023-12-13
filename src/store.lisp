@@ -17,7 +17,7 @@
 	      while line
 	      do
 		 (if (checkForDate date line)
-		     (format t "Date found at index ~a.~%" index))
+		     (format t "~a~%" line))))
       (format t "The database file event_database.csv does not exist!")))
 
 
