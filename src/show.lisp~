@@ -26,12 +26,11 @@
 	(tomorrow (clingon:getopt cmd :show-tomorrow))
 	(date (clingon:getopt cmd :show-date)))
     (cond (tomorrow
-	   (format t "TOMORROW~%"))
+	   (format t "Showing events for ~a~%" (formatLocalTime (local-time:timestamp+ (local-time:today) 1 :day)))
+	   (showEvents (formatLocalTime (local-time:timestamp+ (local-time:today) 1 :day))))
 	  (date
-	   (format t "DATE~%")
 	   (showEvents date))
 	  (t
-	   (format t "TODAY~%")
 	   (format t "Date is ~a~%" (formatLocalTime (local-time:now)))
 	   (showEvents (formatLocalTime (local-time:now)))))))
 

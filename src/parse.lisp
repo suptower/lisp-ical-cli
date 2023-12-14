@@ -32,7 +32,6 @@
   (cond ((search "DTEND" line) (progn
 				 (formatLocalTime (createLocalTimestamp (subseq line (+ (position #\: line :test #'equal) 1))))))
 	((search "DURATION" line) (progn
-				    (format t "startTime looks like this: ~a~%" (createLocalFromHR startTime))
 				    (formatLocalTime (calcEndTime (createLocalFromHR startTime) (subseq line (+ (position #\: line :test #'equal) 1))))))
 	(t (format t "FAILURE, NO DTEND OR DURATION FOUND."))))
 
@@ -165,6 +164,11 @@
 ;; output: human readable time string in form dd.mm.yyyy HH:MM:SS
 (defun formatLocalTime (timestamp)
   (local-time:format-timestring nil timestamp :format +hrtime+))
+
+;; input: human readable time string in form dd.mm.yyyy HH:MM:SS
+;; output: human readable string in form dd.mm.yyyy
+(defun formatDateOnly (time)
+  (subseq time 0 10))
 
 ;; human readable time format
 (defparameter +hrtime+
