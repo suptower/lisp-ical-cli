@@ -9,26 +9,15 @@
 			:if-does-not-exist :create)
     (format file "~a~%" event)))
 
-(defun showEvents (date)
-  (let ((eventList (list)))
-    (if (probe-file "./event_database")
-	(progn
-	  (with-open-file (file "./event_database"
-				:direction :input)
-	    (loop for line = (read-line file nil nil) for index from 0
-		  while line
-		  do
-		     (if (checkForDate date line)
-			 (push line eventList))))
-	  (displayEvents eventList))
-	(format t "The database file event_database does not exist!"))))
+(defun deleteDatabase ()
+  (if (probe-file "./event_database")
+      (delete-file "./event_database")))
 
 (defun dateInRange (start end date)
   "check if date is in range between start and end"
   (if (and (local-time:timestamp< start date) (local-time:timestamp> end date))
       t
       nil))
-
 
 (defun checkForDate (date line)
   "Find out if there is an event on given date"
@@ -99,7 +88,7 @@
 		 (setf retList (append retList (list (subseq line (nth i positions) (nth (+ i 1) positions)))))
 		 (setf retList (append retList (list (subseq line (+ (nth i positions) 2) (nth (+ i 1) positions)))))))
     retList))
-	  
+
 (defun encodeLine (list)
   "Inverse function to decodeLine"
   (let ((output nil))

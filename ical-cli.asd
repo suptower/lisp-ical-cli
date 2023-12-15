@@ -8,7 +8,7 @@
   :description "iCal command line interface"
   :version "0.1.0"
   :author "Arda Köcer <arda.koecer@st.oth-regensburg.de>"
-  :depends-on (:clingon :local-time :cl-date-time-parser)
+  :depends-on (:clingon :local-time :iterate)
   :components ((:module "main"
 		:pathname #P"src/"
 		:components ((:file "package")
@@ -16,6 +16,7 @@
 	   (:file "parse")
 	   (:file "store")
 	   (:file "show")
+	   (:file "sort")
            (:file "main"))))
   :build-operation "program-op"
   :build-pathname "bin/ical-cli"

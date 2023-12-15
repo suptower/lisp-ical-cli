@@ -1,5 +1,7 @@
 (in-package :ical-cli)
 
+
+
 (defun mergeSortOld (buffer)
   "Perform a mergeSort on the given buffer and return the sorted buffer"
   (let ((left (list))
