@@ -1,0 +1,117 @@
+(in-package :ical-cli)
+
+(defun show/options ()
+  (list
+   (clingon:make-option
+    :flag
+<<<<<<< Updated upstream
+    :description "Show events for today (default)"
+    :short-name #\t
+    :long-name "today"
+    :key :show-today)
+   (clingon:make-option
+    :flag
+    :description "Show events for tomorrow"
+    :short-name #\n
+    :long-name "next"
+    :key :show-tomorrow)
+=======
+    :description "Show events for tomorrow"
+    :short-name #\t
+    :long-name "tomorrow"
+    :key :show-tomorrow)
+   (clingon:make-option
+    :flag
+    :description "Show all events"
+    :short-name #\a
+    :long-name "all"
+    :key :show-all)
+>>>>>>> Stashed changes
+   (clingon:make-option
+    :string
+    :description "Show events for given date (dd.mm.yyyy)"
+    :short-name #\d
+    :long-name "date"
+    :key :show-date)))
+
+(defun show/handler (cmd)
+<<<<<<< Updated upstream
+  (let ((today (clingon:getopt cmd :show-today))
+	(tomorrow (clingon:getopt cmd :show-tomorrow))
+	(date (clingon:getopt cmd :show-date)))
+    (cond (tomorrow
+	   (format t "Showing events for ~a~%" (formatLocalTime (local-time:timestamp+ (local-time:today) 1 :day)))
+	   (showEvents (formatLocalTime (local-time:timestamp+ (local-time:today) 1 :day))))
+	  (date
+	   (showEvents date))
+	  (t
+	   (format t "Date is ~a~%" (formatLocalTime (local-time:now)))
+=======
+  (let ((tomorrow (clingon:getopt cmd :show-tomorrow))
+	(showAll (clingon:getopt cmd :show-all))
+	(date (clingon:getopt cmd :show-date)))
+    (cleanupDatabase)
+    (cond (tomorrow
+	   (format t "Showing events for ~a~%" (formatDateOnly (formatLocalTime (local-time:timestamp+ (local-time:today) 1 :day))))
+	   (showEvents (formatLocalTime (local-time:timestamp+ (local-time:today) 1 :day))))
+	  (showAll
+	   (format t "Showing all upcoming events~%")
+	   (showAllEvents))
+	  (date
+	   (format t "Showing events for ~a~%" date)
+	   (showEvents date))
+	  (t
+	   (format t "Showing events for ~a~%" (formatDateOnly (formatLocalTime (local-time:now))))
+>>>>>>> Stashed changes
+	   (showEvents (formatLocalTime (local-time:now)))))))
+
+(defun show/command ()
+  (clingon:make-command
+   :name "show"
+<<<<<<< Updated upstream
+   :description "Show ongoing events from the database"
+   :options (show/options)
+   :handler #'show/handler))
+=======
+   :description "Show upcoming events from the database for today"
+   :options (show/options)
+   :handler #'show/handler))
+
+(defun showEvents (date)
+  (let ((eventList (list)))
+    (if (probe-file "./event_database")
+	(progn
+	  (with-open-file (file "./event_database"
+				:direction :input)
+	    (loop for line = (read-line file nil nil) for index from 0
+		  while line
+		  do
+		     (if (checkForDate date line)
+			 (push line eventList))))
+	  (displayEvents eventList nil))
+	(format t "The database file event_database does not exist!"))))
+
+(defun showAllEvents ()
+  (let ((eventList (list)))
+    (if (probe-file "./event_database")
+	(progn
+	  (with-open-file (file "./event_database"
+				:direction :input)
+	    (loop for line = (read-line file nil nil) for index from 0
+		  while line
+		  do
+		     (push line eventList)))
+	  (displayEvents eventList t))
+	(format t "The database file event_database does not exist!"))))
+
+(defun displayEvents (eventList all)
+  (if eventList
+      (progn
+	(loop for event in eventList
+	      do
+		 (let ((details (decodeLine event)))
+		   (if (not all)
+		       (format t "~a: ~a~%" (getTimes (first details) (second details)) (third details))
+		       (format t "~a - ~a: ~a~%" (first details) (second details) (third details))))))
+      (format t "No upcoming events found.~%")))
+>>>>>>> Stashed changes

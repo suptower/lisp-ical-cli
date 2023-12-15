@@ -23,5 +23,5 @@
 (defun main ()
   (let ((app (top-level/command)))
     ;; to-do
-    ;; every time app is run, clean up database (remove old events from past)
+    ;; every time app is run, clean up database (remove old events from database)
     (clingon:run app)))

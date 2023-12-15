@@ -24,7 +24,6 @@
 	(desc nil)
 	(descFound nil)
 	(output nil))
-    (cleanupDatabase)
     (format t "Importing file ~a~%" file)
     (with-open-file (stream file)
       (loop for line = (read-line stream nil nil) for index from 0
@@ -70,56 +69,9 @@
      :handler #'import/handler))
 
 (defun checkICS (line)
-  "Checks if the file is a true ICS file, if not, the program will exit."
   (if (search "BEGIN:VCALENDAR" line)
       (progn
 	(format t "File passed ICS check, program will be continued.~%"))
       (progn
 	(format t "The specified file to import is not a true ICS file, exiting program.~%")
 	(SB-EXT:QUIT))))
-
-(defun checkForVEVENT (line)
-  "Checks if the line contains a VEVENT property."
-  (if (search "BEGIN:VEVENT" line)
-      t
-      nil))
-
-(defun checkForStart (line)
-  "Checks if the line contains a DTSTART property."
-  (if (search "DTSTART" line)
-      t
-      nil))
-
-(defun checkForEndOrDuration (line)
-  "Checks if the line contains a DTEND or DURATION property."
-  (if (or (search "DTEND" line) (search "DURATION" line))
-      t
-      nil))
-
-(defun checkForSummary (line)
-  "Checks if the line contains a SUMMARY property."
-  (if (search "SUMMARY" line)
-      t
-      nil))
-
-(defun checkForDesc (line)
-  "Checks if the line contains a DESCRIPTION property."
-  (if (search "DESCRIPTION" line)
-      t
-      nil))
-
-(defun getStartTime (line)
-  "Gets the start time from the line and returns it as a local timestamp."
-  (formatLocalTime (createLocalTimestamp (subseq line (+ (position #\: line :test #'equal) 1)))))
-
-(defun getEndTime (startTime line)
-  "Gets the end time from the line (calculates it if necessary by using duration and start time) and returns it as a local timestamp."
-  (cond ((search "DTEND" line) (progn
-				 (formatLocalTime (createLocalTimestamp (subseq line (+ (position #\: line :test #'equal) 1))))))
-	((search "DURATION" line) (progn
-				    (formatLocalTime (calcEndTime (createLocalFromHR startTime) (subseq line (+ (position #\: line :test #'equal) 1))))))
-	(t (format t "FAILURE, NO DTEND OR DURATION FOUND."))))
-
-(defun getSummaryDesc (line)
-  "Gets the summary or description from the line and returns it as a string."
-  (subseq (subseq line (+ (position #\: line :test #'equal) 1)) 0 (- (length (subseq line (+ (position #\: line :test #'equal) 1))) 1)))
