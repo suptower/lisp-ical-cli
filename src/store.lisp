@@ -100,18 +100,6 @@
 		 (setf retList (append retList (list (subseq line (+ (nth i positions) 2) (nth (+ i 1) positions)))))))
     retList))
 	  
-
-<<<<<<< Updated upstream
-(defun displayEvents (eventList)
-  (if eventList
-      (progn
-	(loop for event in eventList
-	      do
-		 (let ((details (decodeLine event)))
-		   (format t "~a: ~a~%" (getTimes (first details) (second details)) (third details)))))
-      (format t "No upcoming events found.~%")))
-		 
-=======
 (defun encodeLine (list)
   "Inverse function to decodeLine"
   (let ((output nil))
@@ -161,4 +149,3 @@
 	  do
 	     (addEvent (encodeline event)))))
 		   
->>>>>>> Stashed changes

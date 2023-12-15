@@ -25,11 +25,8 @@
   (let ((tomorrow (clingon:getopt cmd :show-tomorrow))
 	(showAll (clingon:getopt cmd :show-all))
 	(date (clingon:getopt cmd :show-date)))
-<<<<<<< Updated upstream
-=======
-    (cleanupDatabase)
-    (sortDatabase)
->>>>>>> Stashed changes
+	(cleanupDatabase)
+	(sortDatabase)
     (cond (tomorrow
 	   (format t "Showing events for ~a~%" (formatDateOnly (formatLocalTime (local-time:timestamp+ (local-time:today) 1 :day))))
 	   (showEvents (formatLocalTime (local-time:timestamp+ (local-time:today) 1 :day))))
@@ -48,8 +45,6 @@
    :description "Show upcoming events from the database for today"
    :options (show/options)
    :handler #'show/handler))
-<<<<<<< Updated upstream
-=======
 
 (defun showEvents (date)
   (let ((eventList (list)))
@@ -88,4 +83,3 @@
 		       (format t "~a: ~a~%" (getTimes (first details) (second details)) (third details))
 		       (format t "~a - ~a: ~a~%" (first details) (second details) (third details))))))
       (format t "No upcoming events found.~%")))
->>>>>>> Stashed changes
