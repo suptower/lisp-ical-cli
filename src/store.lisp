@@ -13,39 +13,11 @@
   (if (probe-file "./event_database")
       (delete-file "./event_database")))
 
-(defun showEvents (date)
-  (let ((eventList (list)))
-    (if (probe-file "./event_database")
-	(progn
-	  (with-open-file (file "./event_database"
-				:direction :input)
-	    (loop for line = (read-line file nil nil) for index from 0
-		  while line
-		  do
-		     (if (checkForDate date line)
-			 (push line eventList))))
-	  (displayEvents eventList nil))
-	(format t "The database file event_database does not exist!"))))
-
-(defun showAllEvents ()
-  (let ((eventList (list)))
-    (if (probe-file "./event_database")
-	(progn
-	  (with-open-file (file "./event_database"
-				:direction :input)
-	    (loop for line = (read-line file nil nil) for index from 0
-		  while line
-		  do
-		     (push line eventList)))
-	  (displayEvents eventList t))
-	(format t "The database file event_database does not exist!"))))
-
 (defun dateInRange (start end date)
   "check if date is in range between start and end"
   (if (and (local-time:timestamp< start date) (local-time:timestamp> end date))
       t
       nil))
-
 
 (defun checkForDate (date line)
   "Find out if there is an event on given date"
@@ -116,26 +88,16 @@
 		 (setf retList (append retList (list (subseq line (nth i positions) (nth (+ i 1) positions)))))
 		 (setf retList (append retList (list (subseq line (+ (nth i positions) 2) (nth (+ i 1) positions)))))))
     retList))
-	  
-
-(defun displayEvents (eventList all)
-  (if eventList
-      (progn
-	(loop for event in eventList
-	      do
-		 (let ((details (decodeLine event)))
-		   (if (not all)
-		       (format t "~a: ~a~%" (getTimes (first details) (second details)) (third details))
-		       (format t "~a - ~a: ~a~%" (first details) (second details) (third details))))))
-      (format t "No upcoming events found.~%")))
 
 (defun eventIsOver (line)
+  "Check if event is over"
   (let ((endDate (createLocalFromHR (second (decodeLine line)))))
     (if (local-time:timestamp< endDate (local-time:now))
 	t
 	nil)))
 
 (defun cleanupDatabase ()
+  "Remove all events that are over"
   (let ((outputBuffer (list)))
     (with-open-file (file "./event_database"
 			  :direction :input)

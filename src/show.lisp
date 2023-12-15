@@ -45,3 +45,41 @@
    :description "Show upcoming events from the database for today"
    :options (show/options)
    :handler #'show/handler))
+
+(defun showEvents (date)
+  (let ((eventList (list)))
+    (if (probe-file "./event_database")
+	(progn
+	  (with-open-file (file "./event_database"
+				:direction :input)
+	    (loop for line = (read-line file nil nil) for index from 0
+		  while line
+		  do
+		     (if (checkForDate date line)
+			 (push line eventList))))
+	  (displayEvents eventList nil))
+	(format t "The database file event_database does not exist!"))))
+
+(defun showAllEvents ()
+  (let ((eventList (list)))
+    (if (probe-file "./event_database")
+	(progn
+	  (with-open-file (file "./event_database"
+				:direction :input)
+	    (loop for line = (read-line file nil nil) for index from 0
+		  while line
+		  do
+		     (push line eventList)))
+	  (displayEvents eventList t))
+	(format t "The database file event_database does not exist!"))))
+
+(defun displayEvents (eventList all)
+  (if eventList
+      (progn
+	(loop for event in eventList
+	      do
+		 (let ((details (decodeLine event)))
+		   (if (not all)
+		       (format t "~a: ~a~%" (getTimes (first details) (second details)) (third details))
+		       (format t "~a - ~a: ~a~%" (first details) (second details) (third details))))))
+      (format t "No upcoming events found.~%")))
