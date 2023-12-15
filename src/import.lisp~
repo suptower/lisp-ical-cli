@@ -54,10 +54,10 @@
 	(progn
 	  (with-standard-io-syntax
 	    (if descFound
-		(setf output (format nil "~$,~$,~$,~$" startTime endTime summary desc))
-		(setf output (format nil "~$,~$,~$" startTime endTime summary)))
+		(setf output (format nil "~$::~$::~$::~$" startTime endTime summary desc))
+		(setf output (format nil "~$::~$::~$" startTime endTime summary)))
 	    (addEvent output)
-	    (format t "Imported Event (start, end, summary, description): ~a~%" output)))
+	    (format t "Imported Event (start, end, summary): ~a, ~a, ~a~%" startTime endTime summary)))
 	(format t "ICS file is either missing start time, end time or summary."))))
 
 (defun import/command ()

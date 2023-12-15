@@ -14,11 +14,14 @@
 
 (defun top-level/sub-commands ()
   (list
-   (import/command)))
+   (import/command)
+   (show/command)))
 
 (defun top-level/handler (cmd)
   (clingon:print-usage-and-exit cmd t))
 
 (defun main ()
   (let ((app (top-level/command)))
+    ;; to-do
+    ;; every time app is run, clean up database (remove old events from past)
     (clingon:run app)))

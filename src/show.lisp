@@ -25,11 +25,13 @@
   (let ((tomorrow (clingon:getopt cmd :show-tomorrow))
 	(showAll (clingon:getopt cmd :show-all))
 	(date (clingon:getopt cmd :show-date)))
+    (cleanupDatabase)
     (cond (tomorrow
 	   (format t "Showing events for ~a~%" (formatDateOnly (formatLocalTime (local-time:timestamp+ (local-time:today) 1 :day))))
 	   (showEvents (formatLocalTime (local-time:timestamp+ (local-time:today) 1 :day))))
 	  (showAll
-	   (format t "Showing all upcoming events"))
+	   (format t "Showing all upcoming events~%")
+	   (showAllEvents))
 	  (date
 	   (format t "Showing events for ~a~%" date)
 	   (showEvents date))
