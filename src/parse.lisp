@@ -133,10 +133,16 @@
   (let ((day (parse-integer (subseq timestamp 0 2)))
 	(month (parse-integer (subseq timestamp 3 5)))
 	(year (parse-integer (subseq timestamp 6 10)))
-	(hour (parse-integer (subseq timestamp 11 13)))
-	(minute (parse-integer (subseq timestamp 14 16)))
-	(second (parse-integer (subseq timestamp 17 19))))
-    (local-time:encode-timestamp 0 second minute hour day month year)))
+	(hour nil)
+	(minute nil)
+	(second nil))
+    (if (> (length timestamp) 11)
+	(progn
+	  (setf hour (parse-integer (subseq timestamp 11 13)))
+	  (setf minute (parse-integer (subseq timestamp 14 16)))
+	  (setf second (parse-integer (subseq timestamp 17 19)))
+	  (local-time:encode-timestamp 0 second minute hour day month year))
+	(local-time:encode-timestamp 0 0 0 0 day month year))))
 	
    
 (defun createLocalTimestamp (timestamp)

@@ -23,19 +23,46 @@
 	  (displayEvents eventList))
 	(format t "The database file event_database does not exist!"))))
 
-
-(defun checkForDate (date line)
-  (if (search date (subseq line 0 10))
+(defun dateInRange (start end date)
+  "check if date is in range between start and end"
+  (if (and (local-time:timestamp< start date) (local-time:timestamp> end date))
       t
       nil))
 
-(defun checkIfSameDay (line)
+
+(defun checkForDate (date line)
+  "Find out if there is an event on given date"
+  (let ((startDate (createLocalFromHR (first (decodeLine line))))
+	(endDate (createLocalFromHR (second (decodeLine line))))
+	(timestamp (createLocalFromHR date)))
+    (cond ((search date line) t)
+	  ((dateInRange startDate endDate timestamp) t)
+	  (t nil))))
+
+(defun checkIfSameDay (start end)
   "Check if an the start and end time of an event are on the same day"
-  (let ((startDay (subseq line 0 10))
-	(endDay (subseq line 21 31)))
+  (let ((startDay (subseq start 0 10))
+	(endDay (subseq end 0 10)))
     (if (string= startDay endDay)
 	t
 	nil)))
+
+(defun getTimes (start end)
+  "Format times for display event"
+  (let ((output nil)
+	(timeS nil)
+	(timeE nil))
+    (if (checkIfSameDay start end)
+	(progn
+	  (setf timeS (subseq start 11 16))
+	  (setf timeE (subseq end 11 16))
+	  (setf output (format nil "~a - ~a" timeS timeE)))
+	(progn
+	  (setf timeS (subseq start 0 16))
+	  (setf timeE (subseq end 0 16))
+	  (setf output (format nil "~a - ~a" timeS timeE))))
+    output))
+    
 
 (defun countDoubleColons (line)
   "Find the amount of double colons in the line"
@@ -80,6 +107,6 @@
 	(loop for event in eventList
 	      do
 		 (let ((details (decodeLine event)))
-		   (format t "~a~%" details))))
+		   (format t "~a: ~a~%" (getTimes (first details) (second details)) (third details)))))
       (format t "No upcoming events found.~%")))
 		 
