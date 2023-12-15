@@ -9,26 +9,15 @@
 			:if-does-not-exist :create)
     (format file "~a~%" event)))
 
-(defun showEvents (date)
-  (let ((eventList (list)))
-    (if (probe-file "./event_database")
-	(progn
-	  (with-open-file (file "./event_database"
-				:direction :input)
-	    (loop for line = (read-line file nil nil) for index from 0
-		  while line
-		  do
-		     (if (checkForDate date line)
-			 (push line eventList))))
-	  (displayEvents eventList))
-	(format t "The database file event_database does not exist!"))))
+(defun deleteDatabase ()
+  (if (probe-file "./event_database")
+      (delete-file "./event_database")))
 
 (defun dateInRange (start end date)
   "check if date is in range between start and end"
   (if (and (local-time:timestamp< start date) (local-time:timestamp> end date))
       t
       nil))
-
 
 (defun checkForDate (date line)
   "Find out if there is an event on given date"
@@ -99,14 +88,29 @@
 		 (setf retList (append retList (list (subseq line (nth i positions) (nth (+ i 1) positions)))))
 		 (setf retList (append retList (list (subseq line (+ (nth i positions) 2) (nth (+ i 1) positions)))))))
     retList))
-	  
 
-(defun displayEvents (eventList)
-  (if eventList
-      (progn
-	(loop for event in eventList
+(defun eventIsOver (line)
+  "Check if event is over"
+  (let ((endDate (createLocalFromHR (second (decodeLine line)))))
+    (if (local-time:timestamp< endDate (local-time:now))
+	t
+	nil)))
+
+(defun cleanupDatabase ()
+  "Remove all events that are over"
+  (let ((outputBuffer (list)))
+    (with-open-file (file "./event_database"
+			  :direction :input)
+      (let ((skipped 0))
+	(loop for line = (read-line file nil nil) for index from 0
+	      while line
 	      do
-		 (let ((details (decodeLine event)))
-		   (format t "~a: ~a~%" (getTimes (first details) (second details)) (third details)))))
-      (format t "No upcoming events found.~%")))
-		 
+		 (if (not (eventIsOver line))
+		     (setf outputBuffer (append outputBuffer (list line)))
+		     (setf skipped (+ skipped 1))))
+	(if (> skipped 0)
+	    (format t "Cleaned up database, removed ~a old events.~%" skipped))))
+    (deleteDatabase)
+    (loop for line in outputBuffer
+	  do
+	     (addEvent line))))

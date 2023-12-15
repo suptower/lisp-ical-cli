@@ -1,44 +1,10 @@
 (in-package :ical-cli)
 
-(defun checkForVEVENT (line)
-  (if (search "BEGIN:VEVENT" line)
-      t
-      nil))
-
-(defun checkForStart (line)
-  (if (search "DTSTART" line)
-      t
-      nil))
-
-(defun checkForEndOrDuration (line)
-  (if (or (search "DTEND" line) (search "DURATION" line))
-      t
-      nil))
-
-(defun checkForSummary (line)
-  (if (search "SUMMARY" line)
-      t
-      nil))
-
-(defun checkForDesc (line)
-  (if (search "DESCRIPTION" line)
-      t
-      nil))
-
-(defun getStartTime (line)
-  (formatLocalTime (createLocalTimestamp (subseq line (+ (position #\: line :test #'equal) 1)))))
-
-(defun getEndTime (startTime line)
-  (cond ((search "DTEND" line) (progn
-				 (formatLocalTime (createLocalTimestamp (subseq line (+ (position #\: line :test #'equal) 1))))))
-	((search "DURATION" line) (progn
-				    (formatLocalTime (calcEndTime (createLocalFromHR startTime) (subseq line (+ (position #\: line :test #'equal) 1))))))
-	(t (format t "FAILURE, NO DTEND OR DURATION FOUND."))))
-
-(defun getSummaryDesc (line)
-  (subseq (subseq line (+ (position #\: line :test #'equal) 1)) 0 (- (length (subseq line (+ (position #\: line :test #'equal) 1))) 1)))
-
 (defun calcEndTime (startTime duration)
+  "Calculates the end time of an event, given the start time and the duration.
+   The duration is given in the form of a string, which is parsed into the correct format.
+   The start time is given in the form of a local-time-timestamp.
+   The end time is returned in the form of a local-time-timestamp."
   ;; duration needs to be parsed into year, day, hour, minute, second
   ;; check if duration is dur-date, dur-time or dur-week
   (let ((endTime nil)
@@ -130,6 +96,7 @@
     endTime))
 
 (defun createLocalFromHR (timestamp)
+  "Creates a local-time-timestamp from a human readable timestamp."
   (let ((day (parse-integer (subseq timestamp 0 2)))
 	(month (parse-integer (subseq timestamp 3 5)))
 	(year (parse-integer (subseq timestamp 6 10)))
@@ -146,6 +113,7 @@
 	
    
 (defun createLocalTimestamp (timestamp)
+  "Creates a local-time-timestamp from a ISO8601:2004 timestamp."
   (let ((year (parse-integer (subseq timestamp 0 4)))
 	(month (parse-integer (subseq timestamp 4 6)))
 	(day (parse-integer (subseq timestamp 6 8)))
@@ -169,14 +137,16 @@
 ;; input: standard local-time-timestamp ("2019-11-13T18:08:23.3126624+01:00")
 ;; output: human readable time string in form dd.mm.yyyy HH:MM:SS
 (defun formatLocalTime (timestamp)
+  "Formats a local-time-timestamp into a human readable time string."
   (local-time:format-timestring nil timestamp :format +hrtime+))
 
 ;; input: human readable time string in form dd.mm.yyyy HH:MM:SS
 ;; output: human readable string in form dd.mm.yyyy
 (defun formatDateOnly (time)
+  "Formats a human readable time string into a human readable date string."
   (subseq time 0 10))
 
-;; human readable time format
+;; human readable time format (dd.mm.yyyy HH:MM:SS)
 (defparameter +hrtime+
   ;; 08.12.2023 15:39:41
   '((:day 2) "." (:month 2) "." (:year 4) " " (:hour 2) ":" (:min 2) ":" (:sec 2)))
