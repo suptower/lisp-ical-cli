@@ -15,7 +15,8 @@
 (defun top-level/sub-commands ()
   (list
    (import/command)
-   (show/command)))
+   (show/command)
+   (delete/command)))
 
 (defun top-level/handler (cmd)
   (clingon:print-usage-and-exit cmd t))

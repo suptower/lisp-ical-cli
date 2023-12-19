@@ -59,20 +59,22 @@
 		     (if (checkForDate date line)
 			 (push line eventList))))
 	  (displayEvents (reverse eventList) nil))
-	(format t "The database file event_database does not exist!"))))
+	(format t "The database file event_database does not exist!~%"))))
 
 (defun showAllEvents ()
   (let ((eventList (list)))
     (if (probe-file "./event_database")
 	(progn
 	  (with-open-file (file "./event_database"
-				:direction :input)
-	    (loop for line = (read-line file nil nil) for index from 0
-		  while line
-		  do
-		     (push line eventList)))
-	  (displayEvents (reverse eventList) t))
-	(format t "The database file event_database does not exist!"))))
+				:direction :input
+				:if-does-not-exist nil)
+	    (if file
+		(loop for line = (read-line file nil nil) for index from 0
+		      while line
+		      do
+			 (push line eventList)))
+	  (displayEvents (reverse eventList) t)))
+	(format t "The database file event_database does not exist!~%"))))
 
 (defun displayEvents (eventList all)
   (if eventList
