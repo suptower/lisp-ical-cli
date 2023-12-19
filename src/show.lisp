@@ -59,7 +59,7 @@
 		     (if (checkForDate date line)
 			 (push line eventList))))
 	  (displayEvents (reverse eventList) nil))
-	(format t "The database file event_database does not exist!"))))
+	(format t "The database file event_database does not exist!~%"))))
 
 (defun showAllEvents ()
   (let ((eventList (list)))
@@ -72,7 +72,7 @@
 		  do
 		     (push line eventList)))
 	  (displayEvents (reverse eventList) t))
-	(format t "The database file event_database does not exist!"))))
+	(format t "The database file event_database does not exist!~%"))))
 
 (defun displayEvents (eventList all)
   (if eventList
