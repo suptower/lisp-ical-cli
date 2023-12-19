@@ -18,7 +18,8 @@
 	  (format t "This will delete all events from the database.~%Are you sure? [yes/no]:~%")
 	  (setf skip (read-line))
 	  (if (or (search "yes" skip) (string= "y" skip))
-	      (setf skip t))))
+	      (setf skip t)
+	      (setf skip nil))))
     (if skip
 	(progn
 	  (if (probe-file "./event_database")
