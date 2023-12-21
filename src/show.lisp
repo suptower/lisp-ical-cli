@@ -44,6 +44,7 @@
   (clingon:make-command
    :name "show"
    :description "Show upcoming events from the database for today"
+   :examples '(("Show events for 2nd of March 2024" . "ical-cli show -d 02.03.2024"))
    :options (show/options)
    :handler #'show/handler))
 
