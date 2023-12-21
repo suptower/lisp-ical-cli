@@ -135,5 +135,4 @@
 
 (defun getSummaryDesc (line)
   "Gets the summary or description from the line and returns it as a string."
-  (subseq (subseq line (+ (position #\: line :test #'equal) 1)) 0 (length (subseq line (+ (position #\: line :test #'equal) 1)))))
- 1)))
+  (remove #\\ (subseq (subseq line (+ (position #\: line :test #'equal) 1)) 0 (length (subseq line (+ (position #\: line :test #'equal) 1))))))
