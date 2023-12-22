@@ -32,7 +32,7 @@
 	    do (progn
 		 (if (= 0 index)
 		     (checkICS line))
-		 (if (and (checkForVEVENT line)
+		 (if (and (checkForBEGINEVENT line)
 			  (not inVEVENT))
 		       (setf inVEVENT t))
 		 (if (and (checkForStart line) inVEVENT)
@@ -50,16 +50,23 @@
 		 (if (and (checkForDesc line) inVEVENT)
 		     (progn
 		       (setf descFound t)
-		       (setf desc (getSummaryDesc line)))))))
-    (if (and inVEVENT startTimeFound endTimeFound summaryFound)
-	(progn
-	  (with-standard-io-syntax
-	    (if descFound
-		(setf output (format nil "~$::~$::~$::~$" startTime endTime summary desc))
-		(setf output (format nil "~$::~$::~$" startTime endTime summary)))
-	    (addEvent output)
-	    (format t "Imported Event (start, end, summary): ~a, ~a, ~a~%" startTime endTime summary)))
-	(format t "ICS file is either missing start time, end time or summary."))))
+		       (setf desc (getSummaryDesc line))))
+		 (if (and (checkForENDEVENT line) inVEVENT)
+		     (progn
+		       (if (and startTimeFound endTimeFound summaryFound)
+			   (progn
+			     (with-standard-io-syntax
+			       (if descFound
+				   (setf output (format nil "~$::~$::~$::~$" startTime endTime summary desc))
+				   (setf output (format nil "~$::~$::~$" startTime endTime summary)))
+			       (addEvent output)
+			       (format t "Imported event (start, end, summary): ~a, ~a, ~a~%" startTime endTime summary))))
+		       (setf inVEVENT nil)
+		       (setf startTimeFound nil)
+		       (setf endTimeFound nil)
+		       (setf summaryFound nil)
+		       (setf descFound nil))))))
+    (format t "Import finished.~%")))
 
 (defun import/command ()
     (clingon:make-command
@@ -78,9 +85,15 @@
 	(format t "The specified file to import is not a true ICS file, exiting program.~%")
 	(SB-EXT:QUIT))))
 
-(defun checkForVEVENT (line)
-  "Checks if the line contains a VEVENT property."
+(defun checkForBEGINEVENT (line)
+  "Checks if the line contains a BEGIN:VEVENT property."
   (if (search "BEGIN:VEVENT" line)
+      t
+      nil))
+
+(defun checkForENDEVENT (line)
+  "Checks if the line contains a END:VEVENT property."
+  (if (search "END:VEVENT" line)
       t
       nil))
 
@@ -122,4 +135,4 @@
 
 (defun getSummaryDesc (line)
   "Gets the summary or description from the line and returns it as a string."
-  (subseq (subseq line (+ (position #\: line :test #'equal) 1)) 0 (- (length (subseq line (+ (position #\: line :test #'equal) 1))) 1)))
+  (remove #\\ (subseq (subseq line (+ (position #\: line :test #'equal) 1)) 0 (length (subseq line (+ (position #\: line :test #'equal) 1))))))
