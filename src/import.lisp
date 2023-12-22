@@ -25,7 +25,7 @@
 	(descFound nil)
 	(output nil))
     (cleanupDatabase)
-    (format t "Importing file ~a~%" file)
+    (format t "Importing file ~a.~%" file)
     (with-open-file (stream file)
       (loop for line = (read-line stream nil nil) for index from 0
 	    while line
