@@ -59,7 +59,7 @@
 				     (setf output (format nil "~$::~$::~$::~$" startTime endTime summary desc))
 				     (setf output (format nil "~$::~$::~$" startTime endTime summary)))
 				 (addEvent output)
-				 (format t "Imported event (start, end, summary): ~a, ~a, ~a~%" startTime endTime summary))))
+				 (format t "Imported event (start, end, summary): ~a, ~a, ~a~%" startTime endTime (displaySumOrDesc summary)))))
 			(setf inVEVENT nil)
 			(setf startTimeFound nil)
 			(setf endTimeFound nil)
@@ -134,4 +134,4 @@
 
 (defun getSummaryDesc (line)
   "Gets the summary or description from the line and returns it as a string."
-  (remove #\\ (subseq (subseq line (+ (position #\: line :test #'equal) 1)) 0 (length (subseq line (+ (position #\: line :test #'equal) 1))))))
+  (subseq (subseq line (+ (position #\: line :test #'equal) 1)) 0 (length (subseq line (+ (position #\: line :test #'equal) 1)))))
