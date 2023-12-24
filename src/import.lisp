@@ -25,46 +25,47 @@
 	(descFound nil)
 	(output nil))
     (cleanupDatabase)
-    (format t "Importing file ~a.~%" file)
+    (format t "Importing file ~a~%" file)
     (with-open-file (stream file)
       (loop for line = (read-line stream nil nil) for index from 0
 	    while line
 	    do (progn
-		 (cond ((= 0 index)
-			(checkICS line))
-		       ((and (checkForBEGINEVENT line) (not inVEVENT))
-			(setf inVEVENT t))
-		       ((and (checkForStart line) inVEVENT)
-			(setf startTimeFound t)
-			(setf startTime (getStartTime line)))
-		       ((and (checkForEndOrDuration line) inVEVENT)
-			(setf endTimeFound t)
-			(setf endTime (getEndTime startTime line)))
-		       ((and (checkForSummary line) inVEVENT)
-			(setf summaryFound t)
-			(setf summary (getSummaryDesc line)))
-		       ((and (checkForDesc line) inVEVENT)
-			(setf descFound t)
-			(setf desc (getSummaryDesc line)))
-		       ((and (checkForENDEVENT line) inVEVENT)
-			(cond ((not startTimeFound)
-			       (format t "Found an event with missing start time ending at line ~a, skipping import.~%" index))
-			      ((not endTimeFound)
-			       (format t "Found an event with missing end time ending at line ~a, skipping import.~%" index))
-			      ((not summaryFound)
-			       (format t "Found an event with missing summary ending at line ~a, skipping import.~%" index))
-			      (t
-			       (with-standard-io-syntax
-				 (if descFound
-				     (setf output (format nil "~$::~$::~$::~$" startTime endTime summary desc))
-				     (setf output (format nil "~$::~$::~$" startTime endTime summary)))
-				 (addEvent output)
-				 (format t "Imported event (start, end, summary): ~a, ~a, ~a~%" startTime endTime (displaySumOrDesc summary)))))
-			(setf inVEVENT nil)
-			(setf startTimeFound nil)
-			(setf endTimeFound nil)
-			(setf summaryFound nil)
-			(setf descFound nil))))))
+		 (if (= 0 index)
+		     (checkICS line))
+		 (if (and (checkForBEGINEVENT line)
+			  (not inVEVENT))
+		       (setf inVEVENT t))
+		 (if (and (checkForStart line) inVEVENT)
+		     (progn
+		       (setf startTimeFound t)
+		       (setf startTime (getStartTime line))))
+		 (if (and (checkForEndOrDuration line) inVEVENT)
+		     (progn
+		       (setf endTimeFound t)
+		       (setf endTime (getEndTime startTime line))))
+		 (if (and (checkForSummary line) inVEVENT)
+		     (progn
+		       (setf summaryFound t)
+		       (setf summary (getSummaryDesc line))))
+		 (if (and (checkForDesc line) inVEVENT)
+		     (progn
+		       (setf descFound t)
+		       (setf desc (getSummaryDesc line))))
+		 (if (and (checkForENDEVENT line) inVEVENT)
+		     (progn
+		       (if (and startTimeFound endTimeFound summaryFound)
+			   (progn
+			     (with-standard-io-syntax
+			       (if descFound
+				   (setf output (format nil "~$::~$::~$::~$" startTime endTime summary desc))
+				   (setf output (format nil "~$::~$::~$" startTime endTime summary)))
+			       (addEvent output)
+			       (format t "Imported event (start, end, summary): ~a, ~a, ~a~%" startTime endTime summary))))
+		       (setf inVEVENT nil)
+		       (setf startTimeFound nil)
+		       (setf endTimeFound nil)
+		       (setf summaryFound nil)
+		       (setf descFound nil))))))
     (format t "Import finished.~%")))
 
 (defun import/command ()
@@ -134,4 +135,6 @@
 
 (defun getSummaryDesc (line)
   "Gets the summary or description from the line and returns it as a string."
+  (remove #\\ (subseq (subseq line (+ (position #\: line :test #'equal) 1)) 0 (length (subseq line (+ (position #\: line :test #'equal) 1))))))
+ary or description from the line and returns it as a string."
   (subseq (subseq line (+ (position #\: line :test #'equal) 1)) 0 (length (subseq line (+ (position #\: line :test #'equal) 1)))))

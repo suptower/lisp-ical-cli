@@ -18,20 +18,16 @@
 
 (defun inspect/handler (cmd)
   (let ((file (clingon:getopt cmd :file))
-        (detail (clingon:getopt cmd :detail))
-	(inVEVENT nil)
-	(startTime nil)
-	(startTimeFound nil)
-	(endTime nil)
-	(endTimeFound nil)
-	(summary nil)
-	(summaryFound nil)
-	(desc nil)
-	(descFound nil)
-	(output nil))
-    (format t "Inspecting events from file ~a.~%" file)
-    (with-open-file (stream file)
-      (loop for line = (read-line stream nil nil) for index from 0
+        (detail (clingon:getopt cmd :detail)))))
+
+(defun inspect/command ()
+  (clingon:make-command
+   :name "inspect"
+   :description "Inspect an ical file for its events"
+   :examples '(("Inspect Standup.ics file:" . "ical-cli inspect -f Standup.ics"))
+   :options (inspect/options)
+   :handler #'inspect/handler))
+oop for line = (read-line stream nil nil) for index from 0
 	    while line
 	    do (progn
 		 (cond ((= 0 index)

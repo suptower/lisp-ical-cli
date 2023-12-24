@@ -84,9 +84,10 @@
 	      do
 		 (let ((details (decodeLine event)))
 		   (if (not all)
-		       (format t "~a: ~a~%" (getTimes (first details) (second details)) (displaySumOrDesc (third details)))
-		       (format t "~a - ~a: ~a~%" (first details) (second details) (displaySumOrDesc (third details)))))))
+		       (format t "~a: ~a~%" (getTimes (first details) (second details)) (third details))
+		       (format t "~a - ~a: ~a~%" (first details) (second details) (third details))))))
       (format t "No upcoming events found.~%")))
+t t "No upcoming events found.~%")))
 
 (defun displaySumOrDesc (line)
   "Removes escaped chars for display and converts \n into actual linefeeds"
