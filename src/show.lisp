@@ -15,6 +15,12 @@
     :long-name "all"
     :key :show-all)
    (clingon:make-option
+    :flag
+    :description "Show descriptions for events"
+    :short-name #\v
+    :long-name "verbose"
+    :key :verbose)
+   (clingon:make-option
     :string
     :description "Show events for given date (dd.mm.yyyy)"
     :short-name #\d
@@ -24,6 +30,7 @@
 (defun show/handler (cmd)
   (let ((tomorrow (clingon:getopt cmd :show-tomorrow))
 	(showAll (clingon:getopt cmd :show-all))
+	(verbose (clingon:getopt cmd :verbose))
 	(date (clingon:getopt cmd :show-date)))
     (cleanupDatabase)
     (sortDatabase)
@@ -84,10 +91,9 @@
 	      do
 		 (let ((details (decodeLine event)))
 		   (if (not all)
-		       (format t "~a: ~a~%" (getTimes (first details) (second details)) (third details))
-		       (format t "~a - ~a: ~a~%" (first details) (second details) (third details))))))
+		       (format t "~a: ~a~%" (getTimes (first details) (second details)) (displaySumOrDesc (third details)))
+		       (format t "~a - ~a: ~a~%" (first details) (second details) (displaySumOrDesc (third details)))))))
       (format t "No upcoming events found.~%")))
-t t "No upcoming events found.~%")))
 
 (defun displaySumOrDesc (line)
   "Removes escaped chars for display and converts \n into actual linefeeds"

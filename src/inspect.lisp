@@ -8,26 +8,23 @@
     :long-name "file"
     :description "(REQUIRED) The ical file to inspect"
     :key :file
-    :required t)
-    (clingon:make-option
-    :flag
-    :short-name #\d
-    :long-name "detailed"
-    :description "Show detailed description of events"
-    :key :detail)))
+    :required t)))
 
 (defun inspect/handler (cmd)
   (let ((file (clingon:getopt cmd :file))
-        (detail (clingon:getopt cmd :detail)))))
-
-(defun inspect/command ()
-  (clingon:make-command
-   :name "inspect"
-   :description "Inspect an ical file for its events"
-   :examples '(("Inspect Standup.ics file:" . "ical-cli inspect -f Standup.ics"))
-   :options (inspect/options)
-   :handler #'inspect/handler))
-oop for line = (read-line stream nil nil) for index from 0
+	(inVEVENT nil)
+	(startTime nil)
+	(startTimeFound nil)
+	(endTime nil)
+	(endTimeFound nil)
+	(summary nil)
+	(summaryFound nil)
+	(desc nil)
+	(descFound nil)
+	(output nil))
+    (format t "Inspecting events from file ~a.~%" file)
+    (with-open-file (stream file)
+      (loop for line = (read-line stream nil nil) for index from 0
 	    while line
 	    do (progn
 		 (cond ((= 0 index)
@@ -78,7 +75,7 @@ oop for line = (read-line stream nil nil) for index from 0
   (let ((nextAction 0)
 	(index 0))
     (cond (eventList
-	   (format t "Iterating through ~a events from file.~%" (length eventList))
+	   (format t "Iterating through ~a events from file.~%~%" (length eventList))
 	   (loop while (/= nextAction 5)
 		 do
 		    (let ((startTime (nth 0 (nth index eventList)))
@@ -124,22 +121,22 @@ oop for line = (read-line stream nil nil) for index from 0
     (if (< index length)
 	(setf options (append options (list (format nil "(n) show next event")))))
     (setf options (append options (list (format nil "(q) quit"))))
-    (format t "~a:~%[~{~a~^/~}]~%" question options)
     (loop while (not nextAction)
-	   do
-	   (setf answer (read-line))
-	   (cond ((and (search "d" answer) desc)
-		  (setf nextAction 1))
-		 ((and (search "i" answer) (not imported))
-		  (setf nextAction 2))
-		 ((and (search "p" answer) (> index 1))
-		  (setf nextAction 3))
-		 ((and (search "n" answer) (< index length))
-		  (setf nextAction 4))
-		 ((search "q" answer)
-		  (setf nextAction 5))
-		 (t
-		  (format t "You did not chose a correct option.~%"))))
+	  do
+	     (format t "~a:~%[~{~a~^/~}]~%" question options)
+	     (setf answer (read-line))
+	     (cond ((and (search "d" answer) desc)
+		    (setf nextAction 1))
+		   ((and (search "i" answer) (not imported))
+		    (setf nextAction 2))
+		   ((and (search "p" answer) (> index 1))
+		    (setf nextAction 3))
+		   ((and (search "n" answer) (< index length))
+		    (setf nextAction 4))
+		   ((search "q" answer)
+		    (setf nextAction 5))
+		   (t
+		    (format t "You did not chose a correct option.~%"))))
     nextAction))
 		  
 (defun prepareForImport (event)
@@ -147,6 +144,12 @@ oop for line = (read-line stream nil nil) for index from 0
 	(end (nth 1 event))
 	(sum (nth 2 event))
 	(desc (nth 3 event))
+	(output nil))
+    (if desc
+	(setf output (format nil "~$::~$::~$::~$" start end sum desc))
+	(setf output (format nil "~$::~$::~$" start end sum)))
+    output))
+ 3 event))
 	(output nil))
     (if desc
 	(setf output (format nil "~$::~$::~$::~$" start end sum desc))

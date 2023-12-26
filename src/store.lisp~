@@ -118,6 +118,7 @@
 	    (if (> skipped 0)
 		(format t "Cleaned up database, removed ~a old events.~%" skipped)))))
     (deleteDatabase)
+    (open "./event_database" :direction :probe :if-does-not-exist :create)
     (loop for line in outputBuffer
 	  do
 	     (addEvent line))))
@@ -134,6 +135,7 @@
 		   (setf outputBuffer (append outputBuffer (list (decodeLine line)))))))
     (setf outputBuffer (merge-sort outputBuffer))
     (deleteDatabase)
+    (open "./event_database" :direction :probe :if-does-not-exist :create)
     (loop for event in outputBuffer
 	  do
 	     (addEvent (encodeline event)))))

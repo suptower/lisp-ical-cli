@@ -133,10 +133,40 @@
 		while line
 		do
 		   (setf outputBuffer (append outputBuffer (list (decodeLine line)))))))
-    (setf outputBuffer (merge-sort outputBuffer))
+    (setf outputBuffer (removeDuplicateEvents (merge-sort outputBuffer)))
     (deleteDatabase)
     (open "./event_database" :direction :probe :if-does-not-exist :create)
     (loop for event in outputBuffer
 	  do
 	     (addEvent (encodeline event)))))
+
+(defun isDuplicate (ev1 ev2)
+  "Check if two events share the same start time, end time and summary"
+  (let ((st1 (nth 0 ev1))
+	(st2 (nth 0 ev2))
+	(en1 (nth 1 ev1))
+	(en2 (nth 1 ev2))
+	(su1 (nth 2 ev1))
+	(su2 (nth 2 ev2))
+	(isDuplicate nil))
+    (cond ((and (string= st1 st2) (string= en1 en2) (string= su1 su2))
+	  (setf isDuplicate t)))
+    isDuplicate))
 		   
+(defun removeDuplicateEvents (buffer)
+  (let ((outputBuffer (list))
+	(maxIndex (- (length buffer) 1))
+	(dupe 0))
+    (loop for event in buffer for index from 0
+	  do
+	     (cond ((= index 0)
+		    (setf outputBuffer (append outputBuffer (list event))))
+		   ((not (isDuplicate (nth (- index 1) buffer) event))
+		    (setf outputBuffer (append outputBuffer (list event))))
+		   (t
+		    (setf dupe (+ dupe 1)))))
+    (cond ((= dupe 1)
+	   (format t "Removed ~a duplicate event.~%" dupe))
+	  ((> dupe 1)
+	   (format t "Removed ~a duplicate events.~%" dupe)))
+    outputBuffer))
