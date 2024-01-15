@@ -149,9 +149,3 @@
 	(setf output (format nil "~$::~$::~$::~$" start end sum desc))
 	(setf output (format nil "~$::~$::~$" start end sum)))
     output))
- 3 event))
-	(output nil))
-    (if desc
-	(setf output (format nil "~$::~$::~$::~$" start end sum desc))
-	(setf output (format nil "~$::~$::~$" start end sum)))
-    output))
