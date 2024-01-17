@@ -30,14 +30,11 @@
 	    (setf output (append output (list (nth il left))))
 	    (setf il (+ il 1))
 	    (iterate:next-iteration)))
-      (cond ((isEarlier (nth 0 (nth il left)) (nth 0 (nth (- i il) right)))
-	     (setf output (append output (list (nth il left))))
-	     (setf il (+ il 1)))
-	    ((dateIsEqual (nth 0 (nth il left)) (nth 0 (nth (- i il) right)))
-	     (cond ((isEarlier (nth 1 (nth il left)) (nth 1 (nth (- i il) right)))
-		    (setf output (append output (list (nth il left))))
-		    (setf il (+ il 1)))))
-	    (t (setf output (append output (list (nth (- i il) right)))))))
+      (if (isEarlier (nth 0 (nth il left)) (nth 0 (nth (- i il) right)))
+	  (progn
+	    (setf output (append output (list (nth il left))))
+	    (setf il (+ il 1)))
+	  (setf output (append output (list (nth (- i il) right))))))
     output))
   
 (defun merge-sort (list)
@@ -59,12 +56,5 @@
   (let ((local1 (createLocalFromHR date1))
 	(local2 (createLocalFromHR date2)))
     (if (local-time:timestamp< local1 local2)
-	t
-	nil)))
-
-(defun dateIsEqual (date1 date2)
-  (let ((local1 (createLocalFromHR date1))
-	(local2 (createLocalFromHR date2)))
-    (if (local-time:timestamp= local1 local2)
 	t
 	nil)))
