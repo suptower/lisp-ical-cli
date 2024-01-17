@@ -22,10 +22,10 @@
 	      (setf skip nil))))
     (if skip
 	(progn
-	  (if (probe-file "./event_database")
+	  (if (probe-file "~/.event_database")
 	      (progn
-		(delete-file "./event_database")
-		(open "./event_database" :direction :probe :if-does-not-exist :create)
+		(delete-file "~/.event_database")
+		(open "~/.event_database" :direction :probe :if-does-not-exist :create)
 		(format t "Deleted all events.~%")))))))
 
 (defun delete/command ()

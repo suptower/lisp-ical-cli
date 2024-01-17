@@ -15,12 +15,6 @@
     :long-name "all"
     :key :show-all)
    (clingon:make-option
-    :flag
-    :description "Show descriptions for events"
-    :short-name #\v
-    :long-name "verbose"
-    :key :verbose)
-   (clingon:make-option
     :string
     :description "Show events for given date (dd.mm.yyyy)"
     :short-name #\d
@@ -30,7 +24,6 @@
 (defun show/handler (cmd)
   (let ((tomorrow (clingon:getopt cmd :show-tomorrow))
 	(showAll (clingon:getopt cmd :show-all))
-	(verbose (clingon:getopt cmd :verbose))
 	(date (clingon:getopt cmd :show-date)))
     (cleanupDatabase)
     (sortDatabase)
@@ -57,9 +50,9 @@
 
 (defun showEvents (date)
   (let ((eventList (list)))
-    (if (probe-file "./event_database")
+    (if (probe-file "~/.event_database")
 	(progn
-	  (with-open-file (file "./event_database"
+	  (with-open-file (file "~/.event_database"
 				:direction :input)
 	    (loop for line = (read-line file nil nil) for index from 0
 		  while line
@@ -71,9 +64,9 @@
 
 (defun showAllEvents ()
   (let ((eventList (list)))
-    (if (probe-file "./event_database")
+    (if (probe-file "~/.event_database")
 	(progn
-	  (with-open-file (file "./event_database"
+	  (with-open-file (file "~/.event_database"
 				:direction :input
 				:if-does-not-exist nil)
 	    (if file

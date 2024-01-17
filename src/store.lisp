@@ -3,15 +3,15 @@
 ;; https://gigamonkeys.com/book/files-and-file-io
 
 (defun addEvent (event)
-  (with-open-file (file "./event_database"
+  (with-open-file (file "~/.event_database"
 			:direction :output
 			:if-exists :append
 			:if-does-not-exist :create)
     (format file "~a~%" event)))
 
 (defun deleteDatabase ()
-  (if (probe-file "./event_database")
-      (delete-file "./event_database")))
+  (if (probe-file "~/.event_database")
+      (delete-file "~/.event_database")))
 
 (defun dateInRange (start end date)
   "check if date is in range between start and end"
@@ -105,8 +105,8 @@
 (defun cleanupDatabase ()
   "Remove all events that are over"
   (let ((outputBuffer (list)))
-    (if (probe-file "./event_database")
-	(with-open-file (file "./event_database"
+    (if (probe-file "~/.event_database")
+	(with-open-file (file "~/.event_database"
 			      :direction :input)
 	  (let ((skipped 0))
 	    (loop for line = (read-line file nil nil) for index from 0
@@ -118,7 +118,7 @@
 	    (if (> skipped 0)
 		(format t "Cleaned up database, removed ~a old events.~%" skipped)))))
     (deleteDatabase)
-    (open "./event_database" :direction :probe :if-does-not-exist :create)
+    (open "~/.event_database" :direction :probe :if-does-not-exist :create)
     (loop for line in outputBuffer
 	  do
 	     (addEvent line))))
@@ -126,8 +126,8 @@
 (defun sortDatabase ()
   "Sort database events by start date"
   (let ((outputBuffer (list)))
-    (if (probe-file "./event_database")
-	(with-open-file (file "./event_database"
+    (if (probe-file "~/.event_database")
+	(with-open-file (file "~/.event_database"
 			      :direction :input)
 	  (loop for line = (read-line file nil nil) for index from 0
 		while line
@@ -135,7 +135,7 @@
 		   (setf outputBuffer (append outputBuffer (list (decodeLine line)))))))
     (setf outputBuffer (removeDuplicateEvents (merge-sort outputBuffer)))
     (deleteDatabase)
-    (open "./event_database" :direction :probe :if-does-not-exist :create)
+    (open "~/.event_database" :direction :probe :if-does-not-exist :create)
     (loop for event in outputBuffer
 	  do
 	     (addEvent (encodeline event)))))
