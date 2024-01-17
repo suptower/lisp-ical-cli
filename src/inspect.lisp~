@@ -14,7 +14,7 @@
   (let ((eventList (createEventList (createListFromFile (clingon:getopt cmd :file)))))
     (format t "Inspecting events from file ~a.~%" (clingon:getopt cmd :file))
     (format t "Parsed all events from file, inspecting events now.~%")
-    (iterateEvents output)))
+    (iterateEvents eventList)))
 
 (defun inspect/command ()
   (clingon:make-command

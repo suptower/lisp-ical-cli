@@ -11,9 +11,9 @@
      :required t)))
 
 (defun import/handler (cmd)
-  (let ((eventList (createEventList (createListFromFile file))))
+  (let ((eventList (createEventList (createListFromFile (clingon:getopt cmd :file)))))
     (cleanupDatabase)
-    (format t "Importing file ~a.~%" file)
+    (format t "Importing file ~a.~%" (clingon:getopt cmd :file))
 	(format t "Found ~a events in file.~%" (length eventList))
 	(loop for event in eventList do
 	  (let ((startTime (nth 0 event))
@@ -123,8 +123,8 @@
 	  (loop for line = (read-line stream nil nil) for index from 0
 	    while line
 	    do
-	       (setf fileContent (append fileContent (list line))))))
-	fileContent)
+	       (setf fileContent (append fileContent (list line)))))
+	fileContent))
 
 (defun createEventList (fileContent)
   "Creates a list of events from the file."
@@ -133,7 +133,8 @@
 	(startTime nil)
 	(endTime nil)
 	(summary nil)
-	(desc nil))
+	(desc nil)
+	(output nil))
 	(loop for line in fileContent for index from 0
 	  do
 	     (cond ((= 0 index)

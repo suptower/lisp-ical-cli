@@ -40,7 +40,7 @@
 		      (format t "~a - ~a: ~a~%" startTime endTime (displaySumOrDesc summary))
 		      (setf nextAction (getNextAction (nth index eventList) imported (+ index 1) (length eventList)))
 		      (cond ((= nextAction 1)
-			     (format t "Event description: ~a~%~%" (displaySumOrDesc desc)))
+			     (format t "Event description: ~a~2&" (displaySumOrDesc desc)))
 			    ((= nextAction 2)
 			     (format t "Importing event into database.~%")
 			     (addEvent (prepareForImport (nth index eventList)))
@@ -77,7 +77,7 @@
     (loop while (not nextAction)
 	  do
 	     (format t "~a:~%[~{~a~^/~}]~%" question options)
-	     (setf answer (read-line))
+	     (setf answer (read-line *standard-input* nil (string "q")))
 	     (cond ((and (search "d" answer) desc)
 		    (setf nextAction 1))
 		   ((and (search "i" answer) (not imported))
@@ -87,6 +87,7 @@
 		   ((and (search "n" answer) (< index length))
 		    (setf nextAction 4))
 		   ((search "q" answer)
+		    (format t "Quitting...~%")
 		    (setf nextAction 5))
 		   (t
 		    (format t "You did not chose a correct option.~%"))))

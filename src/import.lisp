@@ -17,14 +17,13 @@
 	(format t "Found ~a events in file.~%" (length eventList))
 	(loop for event in eventList do
 	  (let ((startTime (nth 0 event))
-	  		(endTime (nth 1 event))
-			(summary (nth 2 event))
-			(desc (nth 3 event)))
+		(endTime (nth 1 event))
+		(summary (nth 2 event))
+		(desc (nth 3 event)))
+	    (format t "Imported event (start, end, summary): ~a, ~a, ~a~&" startTime endTime (displaySumOrDesc summary))
 	    (cond ((not desc)
-		   (format t "Imported event (start, end, summary): ~a, ~a, ~a~%" startTime endTime (displaySumOrDesc summary))
 		   (addEvent (format nil "~$::~$::~$" startTime endTime summary)))
-		   (t
-		   (format t "Imported event (start, end, summary, description): ~a, ~a, ~a, ~a~%" startTime endTime (displaySumOrDesc summary) (displaySumOrDesc desc))
+		  (t
 		   (addEvent (format nil "~$::~$::~$::~$" startTime endTime summary desc))))))
     (format t "Import finished.~%")))
 
