@@ -1,7 +1,5 @@
 (in-package :ical-cli)
 
-;; when importing a file, we need to check, if it is a true ICS file (has a VCALENDAR and VEVENT property)
-
 (defun import/options ()
     (list
     (clingon:make-option
@@ -14,58 +12,56 @@
 
 (defun import/handler (cmd)
   (let ((file (clingon:getopt cmd :file))
+	(fileContent nil)
 	(inVEVENT nil)
 	(startTime nil)
-	(startTimeFound nil)
 	(endTime nil)
-	(endTimeFound nil)
 	(summary nil)
-	(summaryFound nil)
 	(desc nil)
-	(descFound nil)
 	(output nil))
     (cleanupDatabase)
     (format t "Importing file ~a.~%" file)
     (with-open-file (stream file)
       (loop for line = (read-line stream nil nil) for index from 0
 	    while line
-	    do (progn
-		 (cond ((= 0 index)
-			(checkICS line))
-		       ((and (checkForBEGINEVENT line) (not inVEVENT))
-			(setf inVEVENT t))
-		       ((and (checkForStart line) inVEVENT)
-			(setf startTimeFound t)
-			(setf startTime (getStartTime line)))
-		       ((and (checkForEndOrDuration line) inVEVENT)
-			(setf endTimeFound t)
-			(setf endTime (getEndTime startTime line)))
-		       ((and (checkForSummary line) inVEVENT)
-			(setf summaryFound t)
-			(setf summary (getSummaryDesc line)))
-		       ((and (checkForDesc line) inVEVENT)
-			(setf descFound t)
-			(setf desc (getSummaryDesc line)))
-		       ((and (checkForENDEVENT line) inVEVENT)
-			(cond ((not startTimeFound)
-			       (format t "Found an event with missing start time ending at line ~a, skipping import.~%" index))
-			      ((not endTimeFound)
-			       (format t "Found an event with missing end time ending at line ~a, skipping import.~%" index))
-			      ((not summaryFound)
-			       (format t "Found an event with missing summary ending at line ~a, skipping import.~%" index))
-			      (t
-			       (with-standard-io-syntax
-				 (if descFound
-				     (setf output (format nil "~$::~$::~$::~$" startTime endTime summary desc))
-				     (setf output (format nil "~$::~$::~$" startTime endTime summary)))
-				 (addEvent output)
-				 (format t "Imported event (start, end, summary): ~a, ~a, ~a~%" startTime endTime (displaySumOrDesc summary)))))
-			(setf inVEVENT nil)
-			(setf startTimeFound nil)
-			(setf endTimeFound nil)
-			(setf summaryFound nil)
-			(setf descFound nil))))))
-    (format t "Import finished.~%")))
+	    do
+	       (setf fileContent (append fileContent (list line)))))
+    (loop for line in fileContent for index from 0
+	  do
+	     (cond ((= 0 index)
+		    ;; RFC 5545 Chapter 3.4
+		    ;; "[...] The first line and last line of the iCalendar object MUST contain a pair of iCalendar object delimiter strings."
+		    (checkICS line))
+		   ((and (checkForBEGINEVENT line) (not inVEVENT))
+		    (setf inVEVENT t))
+		   ((and (checkForStart line) inVEVENT)
+		    (setf startTime (getStartTime line)))
+		   ((and (checkForEndOrDuration line) inVEVENT)
+		    (setf endTime (getEndTime startTime line)))
+		   ((and (checkForSummary line) inVEVENT)
+		    (setf summary (getSummaryDesc fileContent index)))
+		   ((and (checkForDesc line) inVEVENT)
+		    (setf desc (getSummaryDesc fileContent index)))
+		   ((and (checkForENDEVENT line) inVEVENT)
+		    (cond ((not startTime)
+			   (format t "Found an event with missing start time ending at line ~a, skipping import.~%" index))
+			  ((not endTime)
+			   (format t "Found an event with missing end time ending at line ~a, skipping import.~%" index))
+			  ((not summary)
+			   (format t "Found an event with missing summary ending at line ~a, skipping import.~%" index))
+			  (t
+			   (with-standard-io-syntax
+			     (if descd
+				 (setf output (format nil "~$::~$::~$::~$" startTime endTime summary desc))
+				 (setf output (format nil "~$::~$::~$" startTime endTime summary)))
+			     (addEvent output)
+			     (format t "Imported event (start, end, summary): ~a, ~a, ~a~%" startTime endTime (displaySumOrDesc summary)))))
+		    (setf inVEVENT nil)
+		    (setf startTime nil)
+		    (setf endTime nil)
+		    (setf summary nil)
+		    (setf desc nil))))
+    format t "Import finished.~%"))
 
 (defun import/command ()
     (clingon:make-command
@@ -132,6 +128,25 @@
 				    (formatLocalTime (calcEndTime (createLocalFromHR startTime) (subseq line (+ (position #\: line :test #'equal) 1))))))
 	(t (format t "FAILURE, NO DTEND OR DURATION FOUND."))))
 
-(defun getSummaryDesc (line)
-  "Gets the summary or description from the line and returns it as a string."
-  (subseq (subseq line (+ (position #\: line :test #'equal) 1)) 0 (length (subseq line (+ (position #\: line :test #'equal) 1)))))
+(defun getSummaryDesc (file index)
+  "Gets the summary or description from the line, checks for continous lines, removes LF and CR, then returns it as a string."
+  (let ((line (unfoldLines file index)))
+    (remove (code-char 13) (remove (code-char 10) (subseq (subseq line (+ (position #\: line :test #'equal) 1)) 0 (length (subseq line (+ (position #\: line :test #'equal) 1)))))))
+
+(defun unfoldLines (file index)
+  "Unfolds long lines that have been folded."
+  (let ((line (nth index file))
+	(output (remove (code-char 10) (nth index file)))
+	(unfolded nil))
+    (loop while (not unfolded)
+	  do
+	     (cond ((search (string (code-char 10)) line)
+		    (setf index (+ index 1))
+		    (setf line (nth index file))
+		    (cond ((string= (char line 0) " ")
+			   ;; LF followed by white space means this line is folded and needs to be unfolded
+			   (setf output (concatenate 'string output (remove (code-char 10) line))))
+			  (t (setf unfolded t))))
+		   (t (setf unfolded t))))
+    output))
+		  

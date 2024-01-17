@@ -34,9 +34,10 @@
 	     (setf output (append output (list (nth il left))))
 	     (setf il (+ il 1)))
 	    ((dateIsEqual (nth 0 (nth il left)) (nth 0 (nth (- i il) right)))
-	     (cond ((isEarlier (nth 1 (nth il left)) (nth 1 (nth (- i il) right)))
+	     (cond ((or (isEarlier (nth 1 (nth il left)) (nth 1 (nth (- i il) right))) (string< (nth 2 (nth il left)) (nth 2 (nth (- i il) right))))
 		    (setf output (append output (list (nth il left))))
-		    (setf il (+ il 1)))))
+		    (setf il (+ il 1)))
+		   (t (setf output (append output (list (nth (- i il) right)))))))
 	    (t (setf output (append output (list (nth (- i il) right)))))))
     output))
   

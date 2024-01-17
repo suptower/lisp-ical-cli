@@ -12,7 +12,6 @@
 
 (defun inspect/handler (cmd)
   (let ((file (clingon:getopt cmd :file))
-        (date (clingon:getopt cmd :date))
 	(inVEVENT nil)
 	(startTime nil)
 	(startTimeFound nil)
@@ -76,7 +75,7 @@
   (let ((nextAction 0)
 	(index 0))
     (cond (eventList
-	   (format t "Iterating through ~a events from file.~%" (length eventList))
+	   (format t "Iterating through ~a events from file.~%~%" (length eventList))
 	   (loop while (/= nextAction 5)
 		 do
 		    (let ((startTime (nth 0 (nth index eventList)))
@@ -122,22 +121,22 @@
     (if (< index length)
 	(setf options (append options (list (format nil "(n) show next event")))))
     (setf options (append options (list (format nil "(q) quit"))))
-    (format t "~a:~%[~{~a~^/~}]~%" question options)
     (loop while (not nextAction)
-	   do
-	   (setf answer (read-line))
-	   (cond ((and (search "d" answer) desc)
-		  (setf nextAction 1))
-		 ((and (search "i" answer) (not imported))
-		  (setf nextAction 2))
-		 ((and (search "p" answer) (> index 1))
-		  (setf nextAction 3))
-		 ((and (search "n" answer) (< index length))
-		  (setf nextAction 4))
-		 ((search "q" answer)
-		  (setf nextAction 5))
-		 (t
-		  (format t "You did not chose a correct option.~%"))))
+	  do
+	     (format t "~a:~%[~{~a~^/~}]~%" question options)
+	     (setf answer (read-line))
+	     (cond ((and (search "d" answer) desc)
+		    (setf nextAction 1))
+		   ((and (search "i" answer) (not imported))
+		    (setf nextAction 2))
+		   ((and (search "p" answer) (> index 1))
+		    (setf nextAction 3))
+		   ((and (search "n" answer) (< index length))
+		    (setf nextAction 4))
+		   ((search "q" answer)
+		    (setf nextAction 5))
+		   (t
+		    (format t "You did not chose a correct option.~%"))))
     nextAction))
 		  
 (defun prepareForImport (event)
