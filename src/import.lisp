@@ -11,56 +11,21 @@
      :required t)))
 
 (defun import/handler (cmd)
-  (let ((file (clingon:getopt cmd :file))
-	(fileContent nil)
-	(inVEVENT nil)
-	(startTime nil)
-	(endTime nil)
-	(summary nil)
-	(desc nil)
-	(output nil))
+  (let ((eventList (createEventList (createListFromFile (clingon:getopt cmd :file)))))
     (cleanupDatabase)
-    (format t "Importing file ~a.~%" file)
-    (with-open-file (stream file)
-      (loop for line = (read-line stream nil nil) for index from 0
-	    while line
-	    do
-	       (setf fileContent (append fileContent (list line)))))
-    (loop for line in fileContent for index from 0
-	  do
-	     (cond ((= 0 index)
-		    ;; RFC 5545 Chapter 3.4
-		    ;; "[...] The first line and last line of the iCalendar object MUST contain a pair of iCalendar object delimiter strings."
-		    (checkICS line))
-		   ((and (checkForBEGINEVENT line) (not inVEVENT))
-		    (setf inVEVENT t))
-		   ((and (checkForStart line) inVEVENT)
-		    (setf startTime (getStartTime line)))
-		   ((and (checkForEndOrDuration line) inVEVENT)
-		    (setf endTime (getEndTime startTime line)))
-		   ((and (checkForSummary line) inVEVENT)
-		    (setf summary (getSummaryDesc fileContent index)))
-		   ((and (checkForDesc line) inVEVENT)
-		    (setf desc (getSummaryDesc fileContent index)))
-		   ((and (checkForENDEVENT line) inVEVENT)
-		    (cond ((not startTime)
-			   (format t "Found an event with missing start time ending at line ~a, skipping import.~%" index))
-			  ((not endTime)
-			   (format t "Found an event with missing end time ending at line ~a, skipping import.~%" index))
-			  ((not summary)
-			   (format t "Found an event with missing summary ending at line ~a, skipping import.~%" index))
-			  (t
-			   (with-standard-io-syntax
-			     (if desc
-				 (setf output (format nil "~$::~$::~$::~$" startTime endTime summary desc))
-				 (setf output (format nil "~$::~$::~$" startTime endTime summary)))
-			     (addEvent output)
-			     (format t "Imported event (start, end, summary): ~a, ~a, ~a~%" startTime endTime (displaySumOrDesc summary)))))
-		    (setf inVEVENT nil)
-		    (setf startTime nil)
-		    (setf endTime nil)
-		    (setf summary nil)
-		    (setf desc nil))))
+    (format t "Importing file ~a.~%" (clingon:getopt cmd :file))
+	(format t "Found ~a events in file.~%" (length eventList))
+	(loop for event in eventList do
+	  (let ((startTime (nth 0 event))
+	  		(endTime (nth 1 event))
+			(summary (nth 2 event))
+			(desc (nth 3 event)))
+	    (cond ((not desc)
+		   (format t "Imported event (start, end, summary): ~a, ~a, ~a~%" startTime endTime (displaySumOrDesc summary))
+		   (addEvent (format nil "~$::~$::~$" startTime endTime summary)))
+		   (t
+		   (format t "Imported event (start, end, summary, description): ~a, ~a, ~a, ~a~%" startTime endTime (displaySumOrDesc summary) (displaySumOrDesc desc))
+		   (addEvent (format nil "~$::~$::~$::~$" startTime endTime summary desc))))))
     (format t "Import finished.~%")))
 
 (defun import/command ()
@@ -150,3 +115,57 @@
 		   (t (setf unfolded t))))
     output))
 		  
+
+(defun createListFromFile (file)
+  "Creates a list from the file."
+  (let ((fileContent nil))
+	(with-open-file (stream file)
+	  (loop for line = (read-line stream nil nil) for index from 0
+	    while line
+	    do
+	       (setf fileContent (append fileContent (list line)))))
+	fileContent))
+
+(defun createEventList (fileContent)
+  "Creates a list of events from the file."
+  (let ((eventList nil)
+	(inVEVENT nil)
+	(startTime nil)
+	(endTime nil)
+	(summary nil)
+	(desc nil)
+	(output nil))
+	(loop for line in fileContent for index from 0
+	  do
+	     (cond ((= 0 index)
+		    ;; RFC 5545 Chapter 3.4
+		    ;; "[...] The first line and last line of the iCalendar object MUST contain a pair of iCalendar object delimiter strings."
+		    (checkICS line))
+		   ((and (checkForBEGINEVENT line) (not inVEVENT))
+		    (setf inVEVENT t))
+		   ((and (checkForStart line) inVEVENT)
+		    (setf startTime (getStartTime line)))
+		   ((and (checkForEndOrDuration line) inVEVENT)
+		    (setf endTime (getEndTime startTime line)))
+		   ((and (checkForSummary line) inVEVENT)
+		    (setf summary (getSummaryDesc fileContent index)))
+		   ((and (checkForDesc line) inVEVENT)
+		    (setf desc (getSummaryDesc fileContent index)))
+		   ((and (checkForENDEVENT line) inVEVENT)
+		    (cond ((not startTime)
+			   (format t "Found an event with missing start time ending at line ~a, skipping import.~%" index))
+			  ((not endTime)
+			   (format t "Found an event with missing end time ending at line ~a, skipping import.~%" index))
+			  ((not summary)
+			   (format t "Found an event with missing summary ending at line ~a, skipping import.~%" index))
+			  (t
+			   (with-standard-io-syntax
+			     (if desc
+				 (setf output (append output (list (list startTime endTime summary desc))))
+				 (setf output (append output (list (list startTime endTime summary))))))))
+		    (setf inVEVENT nil)
+		    (setf startTime nil)
+		    (setf endTime nil)
+		    (setf summary nil)
+		    (setf desc nil))))
+	output))

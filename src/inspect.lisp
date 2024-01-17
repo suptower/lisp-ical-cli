@@ -11,53 +11,10 @@
     :required t)))
 
 (defun inspect/handler (cmd)
-  (let ((file (clingon:getopt cmd :file))
-	(fileContent nil)
-	(inVEVENT nil)
-	(startTime nil)
-	(endTime nil)
-	(summary nil)
-	(desc nil)
-	(output nil))
-    (format t "Inspecting events from file ~a.~%" file)
-    (with-open-file (stream file)
-      (loop for line = (read-line stream nil nil) for index from 0
-	    while line
-	    do
-	       (setf fileContent (append fileContent (list line)))))
-    (loop for line in fileContent for index from 0
-	  do
-	     (cond ((= 0 index)
-		    (checkICS line))
-		   ((and (checkForBEGINEVENT line) (not inVEVENT))
-		    (setf inVEVENT t))
-		   ((and (checkForStart line) inVEVENT)
-		    (setf startTime (getStartTime line)))
-		   ((and (checkForEndOrDuration line) inVEVENT)
-		    (setf endTime (getEndTime startTime line)))
-		   ((and (checkForSummary line) inVEVENT)
-		    (setf summary (getSummaryDesc fileContent index)))
-		   ((and (checkForDesc line) inVEVENT)
-		    (setf desc (getSummaryDesc fileContent index)))
-		   ((and (checkForENDEVENT line) inVEVENT)
-		    (cond ((not startTime)
-			   (format t "Found an event with missing start time ending at line ~a, skipping event.~%" index))
-			  ((not endTime)
-			   (format t "Found an event with missing end time ending at line ~a, skipping event.~%" index))
-			  ((not summary)
-			   (format t "Found an event with missing summary ending at line ~a, skipping event.~%" index))
-			  (t
-			   (with-standard-io-syntax
-			     (if desc
-				 (setf output (append output (list (list startTime endTime summary desc))))
-				 (setf output (append output (list (list startTime endTime summary))))))))
-		    (setf inVEVENT nil)
-		    (setf startTime nil)
-		    (setf endTime nil)
-		    (setf summary nil)
-		    (setf desc nil))))
+  (let ((eventList (createEventList (createListFromFile (clingon:getopt cmd :file)))))
+    (format t "Inspecting events from file ~a.~%" (clingon:getopt cmd :file))
     (format t "Parsed all events from file, inspecting events now.~%")
-    (iterateEvents output)))
+    (iterateEvents eventList)))
 
 (defun inspect/command ()
   (clingon:make-command
