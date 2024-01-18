@@ -1,3 +1,6 @@
+;;;; main.lisp
+;;;;
+;;;; This file contains the top-level command
 (in-package :ical-cli)
 
 ;; specification

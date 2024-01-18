@@ -1,3 +1,8 @@
+;;;; import.lisp
+;;;;
+;;;; This file containts the import command and handles
+;;;; importing ics files, checking them for corectness and permanently saving them in the event database.
+
 (in-package :ical-cli)
 
 (defvar BEGIN-VEVENT-PROP "BEGIN:VEVENT")
@@ -52,7 +57,7 @@
 	(format t "The specified file to import is not a true ICS file, exiting program.~%")
 	(SB-EXT:QUIT))))
 
-(defun check-ical-property (line property)
+(defun check-ical-property-p (line property)
 	"Checks if the line contains the given property string."
 	(if (search property line)
 		t
@@ -64,9 +69,9 @@
 
 (defun make-end-time (start-time line)
   "Gets the end time from the line (calculates it if necessary by using duration and start time) and returns it as a local timestamp."
-  (cond ((check-ical-property line DTEND-PROP)
+  (cond ((check-ical-property-p line DTEND-PROP)
   		(format-local-time (create-local-timestamp (subseq line (+ (position #\: line :test #'equal) 1)))))
-	((check-ical-property line DURATION-PROP)
+	((check-ical-property-p line DURATION-PROP)
 		(format-local-time (calculate-end-time (create-local-from-hr start-time) (subseq line (+ (position #\: line :test #'equal) 1)))))
 	(t (format t "FAILURE, NO DTEND OR DURATION FOUND."))))
 
@@ -118,17 +123,17 @@
 		    ;; RFC 5545 Chapter 3.4
 		    ;; "[...] The first line and last line of the iCalendar object MUST contain a pair of iCalendar object delimiter strings."
 		    (check-ics line))
-		   ((and (check-ical-property line BEGIN-VEVENT-PROP) (not in-VEVENT))
+		   ((and (check-ical-property-p line BEGIN-VEVENT-PROP) (not in-VEVENT))
 		    (setf in-VEVENT t))
-		   ((and (check-ical-property line DTSTART-PROP) in-VEVENT)
+		   ((and (check-ical-property-p line DTSTART-PROP) in-VEVENT)
 		    (setf start-time (make-start-time line)))
-		   ((and (or (check-ical-property line DTEND-PROP) (check-ical-property line DURATION-PROP)) in-VEVENT)
+		   ((and (or (check-ical-property-p line DTEND-PROP) (check-ical-property-p line DURATION-PROP)) in-VEVENT)
 		    (setf end-time (make-end-time start-time line)))
-		   ((and (check-ical-property line SUMMARY-PROP) in-VEVENT)
+		   ((and (check-ical-property-p line SUMMARY-PROP) in-VEVENT)
 		    (setf summary (make-summary-or-desc file-content index)))
-		   ((and (check-ical-property line DESCRIPTION-PROP) in-VEVENT)
+		   ((and (check-ical-property-p line DESCRIPTION-PROP) in-VEVENT)
 		    (setf desc (make-summary-or-desc file-content index)))
-		   ((and (check-ical-property line END-VEVENT-PROP) in-VEVENT)
+		   ((and (check-ical-property-p line END-VEVENT-PROP) in-VEVENT)
 		    (cond ((not start-time)
 			   (format t "Found an event with missing start time ending at line ~a, skipping import.~%" index))
 			  ((not end-time)

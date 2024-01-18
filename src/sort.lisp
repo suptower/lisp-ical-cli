@@ -1,3 +1,8 @@
+;;;; sort.lisp
+;;;;
+;;;; This file contains every function/algorithm for sorting the database.
+;;;; The used algorithm is a MergeSort.
+
 (in-package :ical-cli)
 
 ;;(defun merge-sort-old (buffer)
@@ -30,11 +35,11 @@
 	    (setf output (append output (list (nth il left))))
 	    (setf il (+ il 1))
 	    (iterate:next-iteration)))
-      (cond ((date-is-earlier (nth 0 (nth il left)) (nth 0 (nth (- i il) right)))
+      (cond ((date-is-earlier-p (nth 0 (nth il left)) (nth 0 (nth (- i il) right)))
 	     (setf output (append output (list (nth il left))))
 	     (setf il (+ il 1)))
-	    ((date-is-equal (nth 0 (nth il left)) (nth 0 (nth (- i il) right)))
-	     (cond ((or (date-is-earlier (nth 1 (nth il left)) (nth 1 (nth (- i il) right))) (string< (nth 2 (nth il left)) (nth 2 (nth (- i il) right))))
+	    ((date-is-equal-p (nth 0 (nth il left)) (nth 0 (nth (- i il) right)))
+	     (cond ((or (date-is-earlier-p (nth 1 (nth il left)) (nth 1 (nth (- i il) right))) (string< (nth 2 (nth il left)) (nth 2 (nth (- i il) right))))
 		    (setf output (append output (list (nth il left))))
 		    (setf il (+ il 1)))
 		   (t (setf output (append output (list (nth (- i il) right)))))))
@@ -56,7 +61,7 @@
 (defun left-half (list)
   (ldiff list (right-half list)))
 
-(defun date-is-earlier (date1 date2)
+(defun date-is-earlier-p (date1 date2)
   "Checks if date1 is earlier than date2."
   (let ((local1 (create-local-from-hr date1))
 	(local2 (create-local-from-hr date2)))
@@ -64,7 +69,7 @@
 	t
 	nil)))
 
-(defun date-is-equal (date1 date2)
+(defun date-is-equal-p (date1 date2)
   "Checks if date1 is equal to date2."
   (let ((local1 (create-local-from-hr date1))
 	(local2 (create-local-from-hr date2)))

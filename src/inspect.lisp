@@ -1,3 +1,8 @@
+;;;; inspect.lisp
+;;;;
+;;;; This file contains the inspect command and handles
+;;;; inspecting ical files interactively by iterating each individual event found in a file.
+
 (in-package :ical-cli)
 
 (defun inspect/options ()

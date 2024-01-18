@@ -1,3 +1,12 @@
+;;;; parse.lisp
+;;;;
+;;;; This file contains functions for parsing information from ical files, for example calculating an end timestamp when given a start timestamp and a duration.
+;;;; The functions here are also responsible for converting timestamps into different formats used in this project, like for example:
+;;;; local-time-format
+;;;; "20130723T194223Z" (ISO8601:2004)
+;;;; "2019-11-13T18:08:23.3126624+01:00" (standard local-time-timestamp)
+;;;; "04.10.2023 08:15 (projects HR ('human-readable') format)
+
 (in-package :ical-cli)
 
 (defun calculate-end-time (start-time duration)
@@ -82,6 +91,8 @@
 	  (t (setf end-time (format nil "FAILURE, NO CORRECT DURATION WAS GIVEN FOR calculate-end-time. GIVEN ARG: ~a~%" duration)))))
     end-time))
 
+;; input: human readable time string in form dd.mm.yyyy [HH:MM:SS]
+;; output: standard local-time-timestamp ("2019-11-13T18:08:23.3126624+01:00")
 (defun create-local-from-hr (timestamp)
   "Creates a local-time-timestamp from a human readable timestamp."
   (let ((day (parse-integer (subseq timestamp 0 2)))

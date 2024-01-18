@@ -1,3 +1,8 @@
+;;;; show.lisp
+;;;;
+;;;; This file contains the show command and handles
+;;;; showing events from the event database given a specific date or showing all upcoming events.
+
 (in-package :ical-cli)
 
 (defun show/options ()
@@ -57,7 +62,7 @@
 	    (loop for line = (read-line file nil nil) for index from 0
 		  while line
 		  do
-		     (if (check-for-date date line)
+		     (if (check-for-date-p date line)
 			 (push line event-list))))
 	  (display-events (reverse event-list) nil))
 	(format t "The database file event_database does not exist!~%"))))

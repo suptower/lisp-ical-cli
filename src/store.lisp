@@ -1,3 +1,8 @@
+;;;; store.lisp
+;;;;
+;;;; This file handles storing the single events in a file.
+;;;; The file location is currently set to ~/.event_database.
+
 (in-package :ical-cli)
 
 (defun add-event (event)
@@ -11,22 +16,22 @@
   (if (probe-file "~/.event_database")
       (delete-file "~/.event_database")))
 
-(defun is-date-in-range (start end date)
+(defun is-date-in-range-p (start end date)
   "check if date is in range between start and end"
   (if (and (local-time:timestamp< start date) (local-time:timestamp> end date))
       t
       nil))
 
-(defun check-for-date (date line)
+(defun check-for-date-p (date line)
   "Find out if there is an event on given date"
   (let ((start-date (create-local-from-hr (first (decode-line line))))
 	(end-date (create-local-from-hr (second (decode-line line))))
 	(timestamp (create-local-from-hr date)))
     (cond ((search date line) t)
-	  ((is-date-in-range start-date end-date timestamp) t)
+	  ((is-date-in-range-p start-date end-date timestamp) t)
 	  (t nil))))
 
-(defun is-same-day (start end)
+(defun is-same-day-p (start end)
   "Check if an the start and end time of an event are on the same day"
   (let ((start-day (subseq start 0 10))
 	(end-day (subseq end 0 10)))
@@ -39,7 +44,7 @@
   (let ((output nil)
 	(time-start nil)
 	(time-end nil))
-    (cond ((is-same-day start end)
+    (cond ((is-same-day-p start end)
 	  (setf time-start (subseq start 11 16))
 	  (setf time-end (subseq end 11 16)))
 	(t
@@ -89,7 +94,7 @@
     (setf output (format nil "~{~a~^::~}" list))
     output))
 
-(defun is-event-over (line)
+(defun is-event-over-p (line)
   "Check if event is over"
   (let ((end-date (create-local-from-hr (second (decode-line line)))))
     (if (local-time:timestamp< end-date (local-time:now))
@@ -106,7 +111,7 @@
 	    (loop for line = (read-line file nil nil) for index from 0
 		  while line
 		  do
-		     (if (not (is-event-over line))
+		     (if (not (is-event-over-p line))
 			 (setf output-buffer (append output-buffer (list line)))
 			 (setf skipped (+ skipped 1))))
 	    (if (> skipped 0)
@@ -134,7 +139,7 @@
 	  do
 	     (add-event (encode-line event)))))
 
-(defun is-duplicate (ev1 ev2)
+(defun is-duplicate-p (ev1 ev2)
   "Check if two events share the same start time, end time and summary"
   (let ((start1 (nth 0 ev1))
 	(start2 (nth 0 ev2))
@@ -142,10 +147,10 @@
 	(end2 (nth 1 ev2))
 	(summary1 (nth 2 ev1))
 	(summary2 (nth 2 ev2))
-	(is-duplicate nil))
+	(is-duplicate-p nil))
     (cond ((and (string= start1 start2) (string= end1 end2) (string= summary1 summary2))
-	  (setf is-duplicate t)))
-    is-duplicate))
+	  (setf is-duplicate-p t)))
+    is-duplicate-p))
 		   
 (defun remove-duplicate-events (buffer)
   (let ((output-buffer (list))
@@ -154,7 +159,7 @@
 	  do
 	     (cond ((= index 0)
 		    (setf output-buffer (append output-buffer (list event))))
-		   ((not (is-duplicate (nth (- index 1) buffer) event))
+		   ((not (is-duplicate-p (nth (- index 1) buffer) event))
 		    (setf output-buffer (append output-buffer (list event))))
 		   (t
 		    (setf dupe (+ dupe 1)))))

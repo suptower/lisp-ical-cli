@@ -1,3 +1,8 @@
+;;;; delete.lisp
+;;;;
+;;;; This file containt the delete command and handles
+;;;; deleting all events in the database as well as returning an empty one as result.
+
 (in-package :ical-cli)
 
 (defun delete/options ()
