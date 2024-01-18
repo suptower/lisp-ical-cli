@@ -43,8 +43,8 @@
 	  (setf time-start (subseq start 11 16))
 	  (setf time-end (subseq end 11 16)))
 	(t
-	  (setf timeS (subseq start 0 16))
-	  (setf timeE (subseq end 0 16))))
+	  (setf time-start (subseq start 0 16))
+	  (setf time-end (subseq end 0 16))))
 	(setf output (format nil "~a - ~a" time-start time-end))
     output))
 
@@ -136,20 +136,19 @@
 
 (defun is-duplicate (ev1 ev2)
   "Check if two events share the same start time, end time and summary"
-  (let ((st1 (nth 0 ev1))
-	(st2 (nth 0 ev2))
-	(en1 (nth 1 ev1))
-	(en2 (nth 1 ev2))
-	(su1 (nth 2 ev1))
-	(su2 (nth 2 ev2))
+  (let ((start1 (nth 0 ev1))
+	(start2 (nth 0 ev2))
+	(end1 (nth 1 ev1))
+	(end2 (nth 1 ev2))
+	(summary1 (nth 2 ev1))
+	(summary2 (nth 2 ev2))
 	(is-duplicate nil))
-    (cond ((and (string= st1 st2) (string= en1 en2) (string= su1 su2))
+    (cond ((and (string= start1 start2) (string= end1 end2) (string= summary1 summary2))
 	  (setf is-duplicate t)))
     is-duplicate))
 		   
 (defun remove-duplicate-events (buffer)
   (let ((output-buffer (list))
-	(maxIndex (- (length buffer) 1))
 	(dupe 0))
     (loop for event in buffer for index from 0
 	  do
