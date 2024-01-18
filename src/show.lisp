@@ -31,7 +31,7 @@
 	   (format t "Showing events for ~a~%" (format-date-only (format-local-time (local-time:timestamp+ (local-time:today) 1 :day))))
 	   (show-events (format-local-time (local-time:timestamp+ (local-time:today) 1 :day))))
 	  (show-all
-	   (format t "Showing all upcoming events~%")
+	   (format t "Showing all upcoming events.~%")
 	   (show-all-events))
 	  (date
 	   (format t "Showing events for ~a~%" date)

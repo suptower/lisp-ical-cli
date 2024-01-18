@@ -7,7 +7,7 @@
   (clingon:make-command
    :name "ical-cli"
    :version "0.0.1"
-   :description "A command line interface for iCal files specified by RFC 5545. (https://datatracker.ietf.org/doc/html/rfc5545)"
+   :description "A command line interface for iCal files specified by RFC 5545 (https://datatracker.ietf.org/doc/html/rfc5545).#\Newline The events are being stored in ~/.event_database."
    :authors '("Arda Köcer <arda.koecer@st.oth-regensburg.de>")
    :handler #'top-level/handler
    :sub-commands (top-level/sub-commands)))
