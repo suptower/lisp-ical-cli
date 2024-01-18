@@ -23,22 +23,22 @@
 
 (defun show/handler (cmd)
   (let ((tomorrow (clingon:getopt cmd :show-tomorrow))
-	(showAll (clingon:getopt cmd :show-all))
+	(show-all (clingon:getopt cmd :show-all))
 	(date (clingon:getopt cmd :show-date)))
-    (cleanupDatabase)
-    (sortDatabase)
+    (cleanup-database)
+    (sort-database)
     (cond (tomorrow
-	   (format t "Showing events for ~a~%" (formatDateOnly (formatLocalTime (local-time:timestamp+ (local-time:today) 1 :day))))
-	   (showEvents (formatLocalTime (local-time:timestamp+ (local-time:today) 1 :day))))
-	  (showAll
-	   (format t "Showing all upcoming events~%")
-	   (showAllEvents))
+	   (format t "Showing events for ~a~%" (format-date-only (format-local-time (local-time:timestamp+ (local-time:today) 1 :day))))
+	   (show-events (format-local-time (local-time:timestamp+ (local-time:today) 1 :day))))
+	  (show-all
+	   (format t "Showing all upcoming events.~%")
+	   (show-all-events))
 	  (date
 	   (format t "Showing events for ~a~%" date)
-	   (showEvents date))
+	   (show-events date))
 	  (t
-	   (format t "Showing events for ~a~%" (formatDateOnly (formatLocalTime (local-time:now))))
-	   (showEvents (formatLocalTime (local-time:now)))))))
+	   (format t "Showing events for ~a~%" (format-date-only (format-local-time (local-time:now))))
+	   (show-events (format-local-time (local-time:now)))))))
 
 (defun show/command ()
   (clingon:make-command
@@ -48,8 +48,8 @@
    :options (show/options)
    :handler #'show/handler))
 
-(defun showEvents (date)
-  (let ((eventList (list)))
+(defun show-events (date)
+  (let ((event-list (list)))
     (if (probe-file "~/.event_database")
 	(progn
 	  (with-open-file (file "~/.event_database"
@@ -57,13 +57,13 @@
 	    (loop for line = (read-line file nil nil) for index from 0
 		  while line
 		  do
-		     (if (checkForDate date line)
-			 (push line eventList))))
-	  (displayEvents (reverse eventList) nil))
+		     (if (check-for-date date line)
+			 (push line event-list))))
+	  (display-events (reverse event-list) nil))
 	(format t "The database file event_database does not exist!~%"))))
 
-(defun showAllEvents ()
-  (let ((eventList (list)))
+(defun show-all-events ()
+  (let ((event-list (list)))
     (if (probe-file "~/.event_database")
 	(progn
 	  (with-open-file (file "~/.event_database"
@@ -73,22 +73,22 @@
 		(loop for line = (read-line file nil nil) for index from 0
 		      while line
 		      do
-			 (push line eventList)))
-	  (displayEvents (reverse eventList) t)))
+			 (push line event-list)))
+	  (display-events (reverse event-list) t)))
 	(format t "The database file event_database does not exist!~%"))))
 
-(defun displayEvents (eventList all)
-  (if eventList
+(defun display-events (event-list all)
+  (if event-list
       (progn
-	(loop for event in eventList
+	(loop for event in event-list
 	      do
-		 (let ((details (decodeLine event)))
+		 (let ((details (decode-line event)))
 		   (if (not all)
-		       (format t "~a: ~a~%" (getTimes (first details) (second details)) (displaySumOrDesc (third details)))
-		       (format t "~a - ~a: ~a~%" (first details) (second details) (displaySumOrDesc (third details)))))))
+		       (format t "~a: ~a~%" (make-times (first details) (second details)) (display-sum-or-desc (third details)))
+		       (format t "~a - ~a: ~a~%" (first details) (second details) (display-sum-or-desc (third details)))))))
       (format t "No upcoming events found.~%")))
 
-(defun displaySumOrDesc (line)
+(defun display-sum-or-desc (line)
   "Removes escaped chars for display and converts \n into actual linefeeds"
   (let ((output ""))
     (loop for i from 0 to (- (length line) 1)

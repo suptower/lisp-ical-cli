@@ -1,19 +1,19 @@
 (in-package :ical-cli)
 
-(defun mergeSortOld (buffer)
-  "Perform a mergeSort on the given buffer and return the sorted buffer"
-  (let ((left (list))
-	(right (list))
-	(nx (- (length buffer) 1)))
-    (loop for index from 0 to (floor (/ nx 2))
-	  do
-	     (setf left (append left (list (nth index buffer)))))
-    (loop for index from (+ (floor (/ nx 2)) 1) to nx
-	  do
-	     (setf right (append right (list (nth index buffer)))))
-    (setf left (mergeSort left))
-    (setf right (mergeSort right))
-    (mergeBuffersOld left right)))
+;;(defun merge-sort-old (buffer)
+;;  "Perform a mergeSort on the given buffer and return the sorted buffer"
+;;  (let ((left (list))
+;;	(right (list))
+;;	(nx (- (length buffer) 1)))
+;;    (loop for index from 0 to (floor (/ nx 2))
+;;	  do
+;;	     (setf left (append left (list (nth index buffer)))))
+;;    (loop for index from (+ (floor (/ nx 2)) 1) to nx
+;;	  do
+;;	     (setf right (append right (list (nth index buffer)))))
+;;    (setf left (mergeSort left))
+;;    (setf right (mergeSort right))
+;;    (mergeBuffersOld left right)))
 
 (defun merge-lists (left right)
   (let ((output (list))
@@ -30,11 +30,11 @@
 	    (setf output (append output (list (nth il left))))
 	    (setf il (+ il 1))
 	    (iterate:next-iteration)))
-      (cond ((isEarlier (nth 0 (nth il left)) (nth 0 (nth (- i il) right)))
+      (cond ((date-is-earlier (nth 0 (nth il left)) (nth 0 (nth (- i il) right)))
 	     (setf output (append output (list (nth il left))))
 	     (setf il (+ il 1)))
-	    ((dateIsEqual (nth 0 (nth il left)) (nth 0 (nth (- i il) right)))
-	     (cond ((or (isEarlier (nth 1 (nth il left)) (nth 1 (nth (- i il) right))) (string< (nth 2 (nth il left)) (nth 2 (nth (- i il) right))))
+	    ((date-is-equal (nth 0 (nth il left)) (nth 0 (nth (- i il) right)))
+	     (cond ((or (date-is-earlier (nth 1 (nth il left)) (nth 1 (nth (- i il) right))) (string< (nth 2 (nth il left)) (nth 2 (nth (- i il) right))))
 		    (setf output (append output (list (nth il left))))
 		    (setf il (+ il 1)))
 		   (t (setf output (append output (list (nth (- i il) right)))))))
@@ -56,16 +56,18 @@
 (defun left-half (list)
   (ldiff list (right-half list)))
 
-(defun isEarlier (date1 date2)
-  (let ((local1 (createLocalFromHR date1))
-	(local2 (createLocalFromHR date2)))
+(defun date-is-earlier (date1 date2)
+  "Checks if date1 is earlier than date2."
+  (let ((local1 (create-local-from-hr date1))
+	(local2 (create-local-from-hr date2)))
     (if (local-time:timestamp< local1 local2)
 	t
 	nil)))
 
-(defun dateIsEqual (date1 date2)
-  (let ((local1 (createLocalFromHR date1))
-	(local2 (createLocalFromHR date2)))
+(defun date-is-equal (date1 date2)
+  "Checks if date1 is equal to date2."
+  (let ((local1 (create-local-from-hr date1))
+	(local2 (create-local-from-hr date2)))
     (if (local-time:timestamp= local1 local2)
 	t
 	nil)))
