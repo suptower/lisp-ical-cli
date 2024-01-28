@@ -47,7 +47,7 @@
 			     (format t "Event description: ~a~2&" (display-sum-or-desc desc)))
 			    ((= next-action 2)
 			     (format t "Importing event into database.~%")
-			     (add-event (prepareForImport (nth index event-list)))
+			     (add-event (prepare-for-import (nth index event-list)))
 			     (format t "Imported event (start, end, summary): ~a, ~a, ~a~%~%" start-time end-time (display-sum-or-desc summary)))
 			    ((= next-action 3)
 			     (format t "Showing previous event.~%~%")
@@ -95,7 +95,7 @@
 		    (format t "You did not chose a correct option.~%"))))
     next-action))
 		  
-(defun prepareForImport (event)
+(defun prepare-for-import (event)
   (let ((start (nth 0 event))
 	(end (nth 1 event))
 	(sum (nth 2 event))
